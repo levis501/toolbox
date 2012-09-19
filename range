@@ -1,0 +1,16 @@
+#!/usr/bin/python
+
+# Calls range() on the arguments, and prints the results, one per line
+#
+# Definition of range() at http://docs.python.org/library/functions.html#range
+
+import sys
+
+
+if __name__=='__main__':
+    intargs = []
+    for s in sys.argv[1:]:
+        intargs.append(int(s))
+
+    for i in range(*intargs):
+        print i,

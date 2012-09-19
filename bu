@@ -1,0 +1,67 @@
+#!/usr/local/bin/python3
+
+import sys
+import fnmatch
+import os
+import re
+
+DEBUG=False
+
+
+def getHighestVersion(files):
+    pattern = re.compile(r"^.+;(\d+)$")
+    highestVersion = 0
+    for filename in files:
+        version = int(pattern.match(filename).group(1))
+        if DEBUG:
+            print("%s %d" % (filename, version))
+        if (version > highestVersion):
+            highestVersion = version
+    return highestVersion
+
+
+def cmd(s):
+    if DEBUG:
+        print("cmd: %s" % (s))
+    os.system(s)
+
+if __name__=='__main__':
+    filepath = sys.argv[1]
+
+    dirname = os.path.dirname(filepath)
+    if (dirname==""):
+        dirname="."
+    backup_dirname = os.path.join(dirname,".bu")
+    filename = os.path.basename(filepath)
+
+    if (len(filename)==0):
+        print("Cannot backup directories.... yet?")
+        sys.exit(1)
+
+    if (not os.path.exists(backup_dirname)):
+        os.mkdir(backup_dirname)
+        
+    directoryListing = os.listdir(backup_dirname)
+    if DEBUG:
+        print("os.listdir(%s)=%s" % (backup_dirname, directoryListing))
+
+    if (len(directoryListing)==0):
+        version=0
+        if DEBUG:
+            print("no prior backups")
+    else:
+        versionFilenames = fnmatch.filter(directoryListing, "%s;*" % filename)
+        if DEBUG:
+            print("prior backups:%s" % versionFilenames)
+        version = getHighestVersion(versionFilenames)+1
+
+    backup_filepath = os.path.join(backup_dirname,filename)
+    cmd("cp %s %s\;%d" % (filepath, backup_filepath, version))
+    cmd("chmod a-w %s\;%d" % (backup_filepath, version))
+
+    backupFile = "%s;%d" % (backup_filepath, version)
+    if (os.path.exists(backupFile)):
+        print("%s backed up to %s" % (filepath, backupFile))
+    else:
+        print("*** Error copying file.  check existance of backup, change script variable Debug to True and try again")
+
