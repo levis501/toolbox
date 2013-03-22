@@ -1,0 +1,31 @@
+#!/usr/bin/python
+
+import sys
+from subprocess import check_output
+
+def getScreenDimensions():
+  return (int(check_output(['tput','lines'])), int(check_output(['tput','cols'])))
+
+
+
+if __name__=='__main__':
+
+    (rows, cols) = getScreenDimensions()
+# TODO: determine # of bins, min and max
+# print a graph
+
+
+
+# old ccount stuff
+    lastCount=0
+    lastItem=None
+    for line in sys.stdin.readlines():
+        if (line == lastItem):
+            lastCount += 1
+        else:
+            if (lastCount > 0):
+                print "%d:%s" % (lastCount, lastItem),
+            lastCount = 1
+            lastItem = line
+    if (lastCount > 0):
+        print "%d:%s" % (lastCount, lastItem),
