@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+import sys
+
+if __name__=='__main__':
+    lastCount=0
+    lastItem=None
+    for line in sys.stdin.readlines():
+        if (line == lastItem):
+            lastCount += 1
+        else:
+            if (lastCount > 0):
+                print "%d:%s" % (lastCount, lastItem),
+            lastCount = 1
+            lastItem = line
+    if (lastCount > 0):
+        print "%d:%s" % (lastCount, lastItem),

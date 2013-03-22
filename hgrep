@@ -1,0 +1,3 @@
+#!/bin/bash
+
+grep --color -C 100000 $@
