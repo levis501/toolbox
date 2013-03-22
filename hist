@@ -10,8 +10,30 @@ def getScreenDimensions():
 
 if __name__=='__main__':
 
+
+    # load data
+    data = {}
+    for line in sys.stdin.readlines()
+        i = int(line)
+        if i in data:
+            data[i]+=1
+        else:
+            data[i]=1
+
+    dataMin = min(data)
+    dataMax = max(data)
     (rows, cols) = getScreenDimensions()
-# TODO: determine # of bins, min and max
+    bins = [0] * cols
+    binSize = (dataMax - dataMin - 1) / cols + 1
+    maxCount = 0
+    for key in data:
+        count = data[key]
+        if count > maxCount:
+            maxCount = count
+        bins[key // binSize] += count
+    
+    heightScale = lines / maxCount
+
 # print a graph
 
 
