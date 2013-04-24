@@ -1,5 +1,11 @@
 #!/usr/local/bin/python3
 
+# quick and dirty backup versions of the given file to a subdirectory named .bu
+# revisions are copied to <filename>;<version_number>
+
+# currently has minor bug when using more than one file on the command line
+# - first version of some of the files start with version_number 1
+
 import sys
 import fnmatch
 import os

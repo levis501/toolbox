@@ -1,3 +1,8 @@
 #!/bin/bash
 
+# grep for an item, and show all* lines
 grep --color -C 100000 $@
+
+# NOTES:
+#  * won't show all lines if there are more than 100000 lines between found lines.  Increase this number if necessary
+#  * could easily be included as an alias
