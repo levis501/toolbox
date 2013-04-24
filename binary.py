@@ -46,7 +46,7 @@ def clearBit(i, n):
 def bitStr(a, n):
 	return ''.join([repr(num) for num in getBits(a,n)])[::-1]
 
-# http://compprog.wordpress.com/2007/11/06/binary-numbers-counting-bits/
+# algorithm explained well at http://compprog.wordpress.com/2007/11/06/binary-numbers-counting-bits/
 def countSparseOnes(i):
     count=0
     while i:
