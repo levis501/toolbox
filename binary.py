@@ -44,12 +44,15 @@ def clearBit(i, n):
     return setBit(i, n, False)
 
 def bitStr(a, n, separationWidth = None, separationCharacter=' '):
-    s = ''.join([repr(num) for num in getBits(a,n)])
+    s = ''.join([repr(num) for num in getBits(a,n)])[::-1]
     if separationWidth == None:
-        return s[::-1]
-    t = s[0:separationWidth]
-    for index in range(separationWidth,n,separationWidth):
-        t = s[index:index+separationWidth] + separationCharacter + t
+        return s
+    t = ""
+    while len(s) > 0:
+        t = s[-separationWidth:] + separationCharacter + t
+        s = s[:-separationWidth]
+    if (t[-1]==separationCharacter):
+        t = t[:-1]
     return t
 
 
