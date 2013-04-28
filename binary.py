@@ -43,8 +43,15 @@ def setBit(i, n, b=True):
 def clearBit(i, n):
     return setBit(i, n, False)
 
-def bitStr(a, n):
-	return ''.join([repr(num) for num in getBits(a,n)])[::-1]
+def bitStr(a, n, separationWidth = None, separationCharacter=' '):
+    s = ''.join([repr(num) for num in getBits(a,n)])
+    if separationWidth == None:
+        return s[::-1]
+    t = s[0:separationWidth]
+    for index in range(separationWidth,n,separationWidth):
+        t = s[index:index+separationWidth] + separationCharacter + t
+    return t
+
 
 # algorithm explained well at http://compprog.wordpress.com/2007/11/06/binary-numbers-counting-bits/
 def countSparseOnes(i):
@@ -80,3 +87,6 @@ def invert(a, bitCount=None):
 	if bitCount == None:
 		return b
 	return b & ((1 << bitCount)-1)
+
+def bitDistance(a, b):
+    return countOnesByParcel(a ^ b)
