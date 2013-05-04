@@ -1,10 +1,7 @@
 #!/usr/local/bin/python3
 
 # quick and dirty backup versions of the given file to a subdirectory named .bu
-# revisions are copied to <filename>;<version_number>
-
-# currently has minor bug when using more than one file on the command line
-# - first version of some of the files start with version_number 1
+# revisions are copied to <filename>;<version_number> (retro throwback to vms)
 
 import sys
 import fnmatch
@@ -16,7 +13,7 @@ DEBUG=False
 
 def getHighestVersion(files):
     pattern = re.compile(r"^.+;(\d+)$")
-    highestVersion = 0
+    highestVersion = -1
     for filename in files:
         version = int(pattern.match(filename).group(1))
         if DEBUG:
