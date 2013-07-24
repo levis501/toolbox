@@ -7,6 +7,7 @@ import sys
 import fnmatch
 import os
 import re
+import shlex
 
 DEBUG=False
 
@@ -59,8 +60,8 @@ if __name__=='__main__':
         version = getHighestVersion(versionFilenames)+1
 
     backup_filepath = os.path.join(backup_dirname,filename)
-    cmd("cp %s %s\;%d" % (filepath, backup_filepath, version))
-    cmd("chmod a-w %s\;%d" % (backup_filepath, version))
+    cmd("cp %s %s\;%d" % (shlex.quote(filepath), shlex.quote(backup_filepath), version))
+    cmd("chmod a-w %s\;%d" % (shlex.quote(backup_filepath), version))
 
     backupFile = "%s;%d" % (backup_filepath, version)
     if (os.path.exists(backupFile)):
