@@ -2,6 +2,8 @@
 
 # binary.py
 
+import math
+
 
 def setBits(a, b, start, count):
     first = a & ((1 << start) - 1)
@@ -79,17 +81,14 @@ def countOnesByParcel(a):
 
 countOnes=countOnesByParcel 
 
-MASK_256 = (1 << 256) - 1
-def invert(a, bitCount=None):
-	global MASK_256
-	b = 0
-	while (a > 0):
-		c = MASK_256 - (a & MASK_256)
-		b = (b << 256) | c
-		a >>= 256
-	if bitCount == None:
-		return b
-	return b & ((1 << bitCount)-1)
 
 def bitDistance(a, b):
     return countOnesByParcel(a ^ b)
+
+def highestOneIndex(a):
+  if a==0:
+    return -1
+  return int(math.log(a)/math.log(2))
+
+def invert(a, bitCount):
+  return (~a) + (1 << bitCount)
