@@ -148,6 +148,23 @@ class BitwiseData:
     return self.value != other.value or self.count != other.count
   def __hash__(self):
     return self.value % ((1<<31)-1)
+  def __iter__(self):
+    value = self.value
+    count = self.count
+    while count > 0:
+      yield value & 0x1
+      value >>= 1
+      count -= 1
+    return
+  def ones(self):
+    value = self.value
+    index = 0
+    while index < self.count:
+      if value & 0x1:
+        yield index
+      value >>= 1
+      index += 1
+    return
 
 """Unit Testing"""
 import unittest
@@ -223,4 +240,12 @@ class BitwiseDataTests(unittest.TestCase):
     bd3 = bd1 | bd2
     self.assertEqual(bd3.getBits(), 0b1111)
 
+  def test_iter(self):
+    a = BitwiseData(0b11001010,8)
+    b = [bit for bit in a]
+    self.assertEqual(b, [0,1,0,1,0,0,1,1])
+
+  def test_ones(self):
+    a = BitwiseData(0b11001010,8)
+    self.assertEqual([one for one in a.ones()], [1,3,6,7])
 
