@@ -92,3 +92,144 @@ def highestOneIndex(a):
 
 def invert(a, bitCount):
   return (~a) + (1 << bitCount)
+
+
+class BitwiseData:
+  """Encapsulates a binary value and its length"""
+  def __init__(self, value=0, count=1):
+    self.value = value
+    minBits = 1 + highestOneIndex(value)
+    if count < minBits:
+      self.count = minBits
+    else:
+      self.count = count
+  def copy(self):
+    return BitwiseData(self.value, self.count)
+  def __len__(self):
+    return self.count
+  def getBits(self):
+    return self.value
+  def countOnes(self):
+    return countOnes(self.value)
+  def setBit(self, n, b=True):
+    self.value = setBit(self.value, n, b)
+  def getBit(self, n):
+    return getBit(self.value, n)
+  def bitStr(self):
+    return bitStr(self.value, self.count)
+
+  def __ior__(self, other):
+    self.value |= other.value
+    return self
+  def __or__(self, other):
+    result = self.copy()
+    result |= other
+    return result
+
+  def __ixor__(self, other):
+    self.value ^= other.value
+    return self
+  def __xor__(self, other):
+    result = self.copy()
+    result ^= other
+    return result
+
+  def __iand__(self, other):
+    self.value &= other.value
+    return self
+  def __and__(self, other):
+    result= self.copy()
+    result &= other
+    return result
+
+  def __invert__(self):
+    result = self.copy()
+    result.value = invert(result.value, result.count)
+    return result
+
+
+
+
+"""Unit Testing"""
+import unittest
+
+class BitwiseDataTests(unittest.TestCase):
+  def test_len(self):
+    bitwiseData = BitwiseData(0,99)
+    self.assertEqual(len(bitwiseData),99)
+
+  def test_countOnes(self):
+    bitwiseData = BitwiseData(0b10010110)
+    self.assertEqual(bitwiseData.countOnes(), 4)
+
+  def test_minCount(self):
+    self.assertEqual(len(BitwiseData()),1)
+    self.assertEqual(len(BitwiseData(1)),1)
+    self.assertEqual(len(BitwiseData(0b10)),2)
+    self.assertEqual(len(BitwiseData(0b10,3)),3)
+
+  def test_getBit(self):
+    bd = BitwiseData(count=4)
+    self.assertEqual(bd.getBit(0),0)
+    self.assertEqual(bd.getBit(1),0)
+    self.assertEqual(bd.getBit(2),0)
+    self.assertEqual(bd.getBit(3),0)
+    bd = BitwiseData(0b1001,5)
+    self.assertEqual(bd.getBit(0),1)
+    self.assertEqual(bd.getBit(1),0)
+    self.assertEqual(bd.getBit(2),0)
+    self.assertEqual(bd.getBit(3),1)
+    self.assertEqual(bd.getBit(4),0)
+
+  def test_setBit(self):
+    bd = BitwiseData(count=4)
+    self.assertEqual(bd.getBit(2),0)
+    bd.setBit(2)
+    self.assertEqual(bd.getBit(2),1)
+    bd.setBit(2,0)
+    self.assertEqual(bd.getBit(2),0)
+
+  def test_xor(self):
+    bd1 = BitwiseData(0b1100)
+    bd2 = BitwiseData(0b1010)
+    bd1 ^= bd2
+    self.assertEquals(bd1.getBits(), 0b0110)
+    bd3 = bd2 ^ BitwiseData(0b0110)
+    self.assertEquals(bd3.getBits(), 0b1100)
+
+  def test_invert(self):
+    bd = ~BitwiseData(0b1010,4)
+    self.assertEqual(bd.getBits(), 0b0101)
+    bd = ~BitwiseData(0,4)
+    self.assertEqual(bd.getBits(), 0b1111)
+
+  def test_copy(self):
+    a = BitwiseData(0b11001010,8)
+    b = a.copy()
+    self.assertEqual(b.getBit(0),0)
+    self.assertEqual(b.getBit(1),1)
+    self.assertEqual(b.getBit(2),0)
+    self.assertEqual(b.getBit(3),1)
+    self.assertEqual(b.getBit(4),0)
+    self.assertEqual(b.getBit(5),0)
+    self.assertEqual(b.getBit(6),1)
+    self.assertEqual(b.getBit(7),1)
+
+  def test_and(self):
+    bd1 = BitwiseData(0b1100)
+    bd2 = BitwiseData(0b1010)
+    bd1 &= bd2
+    self.assertEqual(bd1.getBits(), 0b1000)
+    bd3 = bd2 & BitwiseData(0b0110)
+    self.assertEqual(bd3.getBits(), 0b0010)
+
+  def test_or(self):
+    bd1 = BitwiseData(0b1100)
+    bd2 = BitwiseData(0b1010)
+    bd1 |= bd2
+    self.assertEqual(bd1.getBits(), 0b1110)
+    bd1 = BitwiseData(0b0101,4)
+    bd3 = bd1 | bd2
+    self.assertEqual(bd3.getBits(), 0b1111)
+
+
