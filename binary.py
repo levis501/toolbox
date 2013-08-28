@@ -5,10 +5,10 @@
 import math
 
 
-def setBits(a, b, start, count):
-    first = a & ((1 << start) - 1)
-    last = a >> (start+count)
-    return first | (b << start) | (last << (start+count))
+def setBits(dest, bits, start, count):
+    hi = dest & ((1 << start) - 1)
+    lo = dest >> (start+count)
+    return hi | (bits << start) | (lo << (start+count))
 
 def getOnes(a):
     index = 0
@@ -66,19 +66,18 @@ def countSparseOnes(i):
         i &= (i-1)
     return count
 
-onesParcelSize = 16
-onesParcelMap = [countSparseOnes(i) for i in range(1 << onesParcelSize)]
-onesParcelMask = (1 << onesParcelSize) - 1
 
+_onesParcelSize = 16
+_onesParcelMap = [countSparseOnes(i) for i in range(1 << _onesParcelSize)]
+_onesParcelMask = (1 << _onesParcelSize) - 1
 def countOnesByParcel(a):
-    global onesParcelMap, onesParcelSize, onesParcelMask
+    global _onesParcelMap, _onesParcelSize, _onesParcelMask
     count = 0
     while a > 0:
-        b = a & onesParcelMask
-        count += onesParcelMap[a & onesParcelMask]
-        a >>= onesParcelSize
+        b = a & _onesParcelMask
+        count += _onesParcelMap[a & _onesParcelMask]
+        a >>= _onesParcelSize
     return count
-
 countOnes=countOnesByParcel 
 
 
@@ -109,6 +108,9 @@ class BitwiseData:
     return self.count
   def getBits(self):
     return self.value
+  def setBits(self, bits, start, end):
+    self.value = setBits(self.value, bits, start, end)
+    return
   def countOnes(self):
     return countOnes(self.value)
   def __getitem__(self, n):
@@ -208,6 +210,11 @@ class BitwiseDataTests(unittest.TestCase):
     self.assertEqual(bd[2],1)
     bd[2] = 0
     self.assertEqual(bd[2],0)
+
+  def test_setBits(self):
+    bd = BitwiseData(0b11010111,8)
+    bd.setBits(0b1010, 2, 4)
+    self.assertEqual(bd.getBits(), 0b11101011)
 
   def test_xor(self):
     bd1 = BitwiseData(0b1100)
