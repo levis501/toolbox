@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+# print statstics of the floating point data presented at stdin
+
+import sys
+
+from math import sqrt
+
+if __name__=='__main__':
+
+
+    # load data
+    data = []
+    for line in sys.stdin.readlines():
+      for item in line.split():
+        try:
+          i = float(item)
+          data.append(i)
+        except ValueError:
+          continue
+
+    N = len(data)
+    uniqueN = len(set(data))
+    dataSum = sum(data)
+    dataAvg = dataSum / N
+    dataMin = min(data)
+    dataMax = max(data)
+
+    stddev = sqrt(sum([(x-dataAvg)**2 for x in data])/N)
+
+    print("       number if items: " + str(N))
+    print("number of unique items: " + str(uniqueN))
+    print("                   sum: " + str(dataSum))
+    print("                  mean: " + str(dataAvg))
+    print("                   max: " + str(dataMax))
+    print("                   min: " + str(dataMin))
+    print("    standard deviation: " + str(stddev))
+
+    

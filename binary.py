@@ -111,6 +111,8 @@ class BitwiseData:
   def setBits(self, bits, start, end):
     self.value = setBits(self.value, bits, start, end)
     return
+  def setValue(self, value):
+    self.value = value
   def countOnes(self):
     return countOnes(self.value)
   def __getitem__(self, n):
@@ -171,6 +173,8 @@ class BitwiseData:
       value >>= 1
       index += 1
     return
+  def increaseCapacity(self, increaseAmount):
+    self.count += increaseAmount
 
 """Unit Testing"""
 import unittest
@@ -259,4 +263,13 @@ class BitwiseDataTests(unittest.TestCase):
   def test_ones(self):
     a = BitwiseData(0b11001010,8)
     self.assertEqual([one for one in a.ones()], [1,3,6,7])
+
+  def test_increaseCapacity(self):
+    a = BitwiseData(0b11001010,8)
+    self.assertEqual(len(a),8)
+    a.increaseCapacity(1)
+    self.assertEqual(len(a),9)
+    a.increaseCapacity(10)
+    self.assertEqual(len(a),19)
+
 
