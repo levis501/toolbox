@@ -79,7 +79,7 @@ if __name__=='__main__':
           continue
 
 
-    print("       number if items: " + str(stats.N()))
+    print("       number of items: " + str(stats.N()))
     print("number of unique items: " + str(stats.uniqueCount()))
     print("                   sum: " + str(stats.sum()))
     print("                  mean: " + str(stats.avg()))
