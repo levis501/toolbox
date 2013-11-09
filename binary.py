@@ -177,6 +177,11 @@ class BitwiseData:
     self.count += increaseAmount
   def bitDistance(self, other):
     return bitDistance(self.value, other.value)
+  def setAllZeros(self):
+    self.value = 0
+  def setAllOnes(self):
+    self.value = invert(0, self.count)
+
 
 """Unit Testing"""
 import unittest
@@ -280,6 +285,18 @@ class BitwiseDataTests(unittest.TestCase):
     self.assertEqual(a.bitDistance(b),4)
     c = BitwiseData(0b1111,4)
     self.assertEqual(b.bitDistance(c),0)
+
+  def test_setAll(self):
+    a = BitwiseData(0b10100101,8)
+    self.assertEqual(a.countOnes(), 4)
+    a.setAllZeros()
+    self.assertEqual(a.countOnes(),0)
+    b = BitwiseData(0b00001111,8)
+    self.assertEqual(b.countOnes(), 4)
+    b.setAllOnes()
+    self.assertEqual(b.countOnes(),8)
+    
+
 
 
 if __name__=='__main__':
