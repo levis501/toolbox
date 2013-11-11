@@ -147,8 +147,12 @@ class BitwiseData:
     result.value = invert(result.value, result.count)
     return result
   def __eq__(self, other):
+    if other == None:
+      return False
     return self.value == other.value and self.count == other.count
   def __ne__(self, other):
+    if other ==None:
+      return False
     return self.value != other.value or self.count != other.count
   def __hash__(self):
     return self.value % ((1<<31)-1)
