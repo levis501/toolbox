@@ -185,6 +185,16 @@ class BitwiseData:
     self.value = 0
   def setAllOnes(self):
     self.value = invert(0, self.count)
+  def getIndexedBits(self):
+    a = self.value
+    n = self.count
+    i = 0;
+    while (i < n):
+      yield (i, a & 0x1)
+      a >>= 1
+      i += 1
+    return
+
 
 
 """Unit Testing"""
@@ -300,8 +310,11 @@ class BitwiseDataTests(unittest.TestCase):
     b.setAllOnes()
     self.assertEqual(b.countOnes(),8)
     
-
-
+  def test_getIndexedBits(self):
+    a = BitwiseData(0b10100111,8)
+    l = [1,1,1,0,0,1,0,1]
+    for (i,b) in a.getIndexedBits():
+      self.assertEqual(b,l[i])
 
 if __name__=='__main__':
   unittest.main()
