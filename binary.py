@@ -80,6 +80,8 @@ def countOnesByParcel(a):
     return count
 countOnes=countOnesByParcel 
 
+def countZeros(a,n):
+  return n-countOnes(a)
 
 def bitDistance(a, b):
     return countOnesByParcel(a ^ b)
@@ -115,6 +117,8 @@ class BitwiseData:
     self.value = value
   def countOnes(self):
     return countOnes(self.value)
+  def countZeros(self):
+    return countZeros(self.value, self.count)
   def __getitem__(self, n):
     return getBit(self.value, n)
   def __setitem__(self, n, b):
@@ -185,6 +189,10 @@ class BitwiseData:
     self.value = 0
   def setAllOnes(self):
     self.value = invert(0, self.count)
+  def setZeros(self, start, count):
+    self.setBits(0, start, count)
+  def setOnes(self, start, count):
+    self.setBits(invert(0, count), start, count)
   def getIndexedBits(self):
     a = self.value
     n = self.count
@@ -208,6 +216,10 @@ class BitwiseDataTests(unittest.TestCase):
   def test_countOnes(self):
     bitwiseData = BitwiseData(0b10010110)
     self.assertEqual(bitwiseData.countOnes(), 4)
+
+  def test_countZeros(self):
+    bitwiseData = BitwiseData(0b10010110)
+    self.assertEqual(bitwiseData.countZeros(), 4)    
 
   def test_minCount(self):
     self.assertEqual(len(BitwiseData()),1)
@@ -315,6 +327,18 @@ class BitwiseDataTests(unittest.TestCase):
     l = [1,1,1,0,0,1,0,1]
     for (i,b) in a.getIndexedBits():
       self.assertEqual(b,l[i])
+
+  def test_setZeros(self):
+    a = BitwiseData(0b10100111,8)
+    b = BitwiseData(0b10000011,8)
+    a.setZeros(2,5)
+    self.assertEqual(a,b)
+
+  def test_setOnes(self):
+    a = BitwiseData(0b10100111,8)
+    b = BitwiseData(0b11111111,8)
+    a.setOnes(2,5)
+    self.assertEqual(a,b)
 
 if __name__=='__main__':
   unittest.main()
