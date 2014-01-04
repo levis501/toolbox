@@ -19,17 +19,17 @@ def getOnes(a):
         a >>= 1
 
 def getBits(a, n):
-	while (n > 0):
-		yield a & 0x1
-		a >>= 1
-		n -= 1
+  while (n > 0):
+    yield a & 0x1
+    a >>= 1
+    n -= 1
 
 def getIndexedBits(a, n):
-	i = 0;
-	while (i < n):
-		yield (i, a & 0x1)
-		a >>= 1
-		i += 1
+  i = 0;
+  while (i < n):
+    yield (i, a & 0x1)
+    a >>= 1
+    i += 1
 
 def getBit(i, n):
     ii = i >> n

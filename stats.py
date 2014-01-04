@@ -33,6 +33,10 @@ class Statistics:
     if self.dataUniques != None:
       self.dataUniques.add(datum)
 
+  def addAll(self, data):
+    for datum in data:
+      self.add(datum)
+
   def avg(self):
     if self.dataCount==0:
       return "undef"
