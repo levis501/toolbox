@@ -6,7 +6,7 @@ import sys
 
 from math import sqrt
 
-class Statistics:
+class Stats:
   def __init__(self, trackUniques=False):
     self.dataCount = 0
     self.dataSum = 0
@@ -70,6 +70,9 @@ class Statistics:
       return "undef"
     return sqrt(self.avg2() - self.avg()**2)
 
+
+class Statistics(Stats):
+  pass
 
 if __name__=='__main__':
     # load data
