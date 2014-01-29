@@ -190,7 +190,7 @@ def demo_score(i):
     a = i["a"]
     b = i["b"]
     c = i["c"]
-    return -sum([(lambda d:d*d)(a*x*x+b*x+c-math.exp(x)) for x in frange(0,1,0.001)])
+    return -sum([(a*x*x+b*x+c-math.exp(x))**2 for x in frange(0,1,0.001)])
 
 def demo_main():
     """Evolve an individual to maximize demo_score."""
@@ -226,7 +226,7 @@ def demo_seq_score(i):
 def demo_sequence():
   import stats
   genome = {"TestSequence" : Seq(lambda i : i**2, lambda x : x**0.5, 0, 1, 200000)}
-  S = stats.Stats([roll(genome)["TestSequence"] for i in range(100000)],True)  # @UnusedVariable
+  S = stats.Stats([roll(genome)["TestSequence"] for i in range(10000)],True)  # @UnusedVariable
   S.print() # mean should be near 1/3
   
   randomizer = random.Random()
@@ -246,5 +246,5 @@ def demo_sequence():
 
 
 if __name__=='__main__':
-    demo_sequence()
-#     demo_main()
+#     demo_sequence()
+    demo_main()
