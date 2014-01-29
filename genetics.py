@@ -70,6 +70,7 @@ class Population:
   def __init__(self, genome, scoringFunction, random=random):
     """Initialize the parameters for the population."""
     self.population = [] # a list of (indiviudal, score) tuples
+    self.individuals = set()
     self.genome = genome
     self.scoringFunction = scoringFunction
     self.isSorted = True
@@ -98,22 +99,24 @@ class Population:
     else:
       newMember = self.score(individual)
     self.population.append(newMember)
+    self.individuals.add(self.hash(individual))
     self.isSorted = False
 
   def __len__(self):
     """Return the number of individuals in the population."""
     return len(self.population)
 
+  def hash(self, individual):
+    return tuple(sorted(individual.items()))
+
   def __contains__(self, individual):
     """Return true if the given individual exists in the population."""
-    for member in self.population:
-      if equals(member[0], individual):
-        return True
-    return False
+    return self.hash(individual) in self.individuals
 
   def copyPopulationFrom(self, other):
     """Duplicate another population."""
-    self.population = other.population
+    self.population = list(other.population)
+    self.individuals = set(other.individuals)
     self.isSorted = other.isSorted
 
   def evolve(self, elitism=1, mutation=None):
@@ -190,7 +193,11 @@ def demo_score(i):
     a = i["a"]
     b = i["b"]
     c = i["c"]
-    return -sum([(a*x*x+b*x+c-math.exp(x))**2 for x in frange(0,1,0.001)])
+    total = 0
+    for i in range(100):
+      x = i * 0.01
+      total += (a*x*x+b*x+c-math.exp(x))**2
+    return -total # higher scores == more fit individual
 
 def demo_main():
     """Evolve an individual to maximize demo_score."""
