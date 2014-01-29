@@ -45,20 +45,13 @@ def mutate(a, genome, keyProbability=None, random=random):
       if (random.random() <= keyProbability):
         # perform the following for each gene randomly selected for mutation
         originalValue = a[key]
-#         L = list(genome[key])
-        L = genome[key]
-        try:
-          L1 = L[:L.index(originalValue)]
-        except ValueError:
-          a[key] = random.choice(genome[key])
-          return
-        L.reverse()
-        L2 = L[:L.index(originalValue)]
-        if (random.random() < (len(L1)/(len(L1)+len(L2)))):
-          L = L1
+        originalIndex = genome[key].index(originalValue)
+        delta = roulette_index(len(genome[key]), random)
+        if random.random() < 0.5:
+          newIndex = (originalIndex + delta) % len(genome[key])
         else:
-          L = L2
-        a[key] = roulette(L)
+          newIndex = (originalIndex - delta) % len(genome[key])
+        a[key] = genome[key][newIndex]
     
 def equals(a,b):
     """Return true iff each gene in a is identical in b (and vice versa)"""
@@ -146,44 +139,7 @@ def frange(a, b, step):
   while a < b:
     yield a
     a += step
-
-def demo_score(i):
-    """Score an individual by fit to ax^2+bx+c = e^x in the range [0,1]"""
-    a = i["a"]
-    b = i["b"]
-    c = i["c"]
-    return -sum([(lambda d:d*d)(a*x*x+b*x+c-math.exp(x)) for x in frange(0,1,0.001)])
-
-def demo_main():
-    """Evolve an individual to maximize demo_score."""
-    randomizer = random.Random()
-    randomizer.seed(0)
-    genome = { 
-        "a": tuple(frange(-3,3,0.0001)), 
-        "b": tuple(frange(-3,3,0.0001)), 
-        "c": tuple(frange(-3,3,0.0001))}
-
-    population = Population(genome,demo_score,randomizer)
-    #population.addIndividual({"a":0.8389, "b":0.8515, "c":1.0129})
-    population.addRandomIndividuals(100)
-    generation=0
-    population.sort()
-    for generation in range(200):
-      population.sort()
-      if (generation % 50 == 0):
-        print("gen %.3d: %s" % (generation, population.population[-1]))
-        print("gen %.3d: %s" % (generation, population.population[-2]))
-        print("gen %.3d: %s" % (generation, population.population[-3]))
-        print()
-      population.evolve(mutation=0.20, elitism=2)
-
-    population.sort()
-    print()
-    print("gen %.3d: %s" % (generation, population.population[-1]))
-
-def demo_seq_score(i):
-  x = i["TestSequence"]
-  return -((x-0.5)**2)
+    
 
 class Seq:
   def __init__(self, f, finv, a, b, length):
@@ -227,6 +183,45 @@ class Seq:
     if i<0 or i>=self.length:
       raise ValueError
     return i
+    
+
+def demo_score(i):
+    """Score an individual by fit to ax^2+bx+c = e^x in the range [0,1]"""
+    a = i["a"]
+    b = i["b"]
+    c = i["c"]
+    return -sum([(lambda d:d*d)(a*x*x+b*x+c-math.exp(x)) for x in frange(0,1,0.001)])
+
+def demo_main():
+    """Evolve an individual to maximize demo_score."""
+    randomizer = random.Random()
+    randomizer.seed(0)
+    genome = { 
+        "a": tuple(frange(-3,3,0.0001)), 
+        "b": tuple(frange(-3,3,0.0001)), 
+        "c": tuple(frange(-3,3,0.0001))}
+
+    population = Population(genome,demo_score,randomizer)
+    #population.addIndividual({"a":0.8389, "b":0.8515, "c":1.0129})
+    population.addRandomIndividuals(100)
+    generation=0
+    population.sort()
+    for generation in range(200):
+      population.sort()
+      if (generation % 50 == 0):
+        print("gen %.3d: %s" % (generation, population.population[-1]))
+        print("gen %.3d: %s" % (generation, population.population[-2]))
+        print("gen %.3d: %s" % (generation, population.population[-3]))
+        print()
+      population.evolve(mutation=0.20, elitism=2)
+
+    population.sort()
+    print()
+    print("gen %.3d: %s" % (generation, population.population[-1]))
+
+def demo_seq_score(i):
+  x = i["TestSequence"]
+  return -((x-0.5)**2)
 
 def demo_sequence():
   import stats
@@ -246,7 +241,7 @@ def demo_sequence():
     
   print("Top individuals:")
   for i in range(1,11):
-    print("#%d" % (i, population.population[-i]))
+    print("#%d %s" % (i, population.population[-i]))
     
 
 
