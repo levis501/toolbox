@@ -45,7 +45,8 @@ def mutate(a, genome, keyProbability=None, random=random):
       if (random.random() <= keyProbability):
         # perform the following for each gene randomly selected for mutation
         originalValue = a[key]
-        L = list(genome[key])
+#         L = list(genome[key])
+        L = genome[key]
         try:
           L1 = L[:L.index(originalValue)]
         except ValueError:
@@ -191,28 +192,38 @@ class Seq:
     self.a = a
     self.b = b
     self.length = length
-    self.increment = (a-b)/(length-1)
+    self.increment = (b-a)/(length-1)
   def __len__(self):
     return self.length
   def __getitem__(self, i):
     if type(i) != slice:
-      return self.f(self.a + i * self.increment)
+      x = self.a + i * self.increment
+      return self.f(x)
     (start, stop, step) = i.indices(self.length)
-    a=self.f(start)
-    length = (stop - start - 1) // step + 1
+    a = self.a + start * self.increment
+    if start > stop:
+      length = (start - stop - 1) // -step + 1
+    else:
+      length = (stop - start - 1) // step + 1
     if length <= 0:
       return []
-    b=self.f(start + (length-1)*step)
+    b = a + (length-1)*step * self.increment
     return Seq(self.f,self.finv,a,b,length)
   def __iter__(self):
     for i in range(0,self.length):
       yield self[i]
     return
-  
-def __setitem__(self, key, value):
+  def reverse(self):
+    a = self.b
+    b = self.a
+    self.a = a
+    self.b = b
+    self.increment = -self.increment
+#   def __setitem__(self, key, value):
 #   def __delitem__(self, key):
-  def index(self, x):
-    i = round(self.invf(x))
+  def index(self, y):
+    x = self.finv(y)
+    i = round((x-self.a) / self.increment)
     if i<0 or i>=self.length:
       raise ValueError
     return i
