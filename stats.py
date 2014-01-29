@@ -7,7 +7,7 @@ import sys
 from math import sqrt
 
 class Stats:
-  def __init__(self, trackUniques=False):
+  def __init__(self, initialData=[], trackUniques=False):
     self.dataCount = 0
     self.dataSum = 0
     self.dataSquaredSum = 0
@@ -17,6 +17,7 @@ class Stats:
       self.dataUniques = set()
     else:
       self.dataUniques = None
+    self.addAll(initialData)
 
   def add(self, datum):
     self.dataCount += 1
@@ -61,7 +62,7 @@ class Stats:
 
   def uniqueCount(self):
     if self.dataUniques == None:
-      return "enable with -u or --unique (requires more memory)"
+      return "enable with -u or --unique, or Stats(trackUniques=True) (requires more memory)"
     else:
       return len(self.dataUniques)
 
@@ -70,13 +71,18 @@ class Stats:
       return "undef"
     return sqrt(self.avg2() - self.avg()**2)
 
-
-class Statistics(Stats):
-  pass
+  def print(self):
+    print("       number of items: " + str(self.N()))
+    print("number of unique items: " + str(self.uniqueCount()))
+    print("                   sum: " + str(self.sum()))
+    print("                  mean: " + str(self.avg()))
+    print("                   max: " + str(self.max()))
+    print("                   min: " + str(self.min()))
+    print("    standard deviation: " + str(self.std()))
 
 if __name__=='__main__':
     # load data
-    stats = Statistics("--unique" in sys.argv or "-u" in sys.argv)
+    stats = Stats(trackUniques="--unique" in sys.argv or "-u" in sys.argv)
     for line in sys.stdin.readlines():
       for item in line.split():
         try:
@@ -84,14 +90,5 @@ if __name__=='__main__':
           stats.add(i)
         except ValueError:
           continue
-
-
-    print("       number of items: " + str(stats.N()))
-    print("number of unique items: " + str(stats.uniqueCount()))
-    print("                   sum: " + str(stats.sum()))
-    print("                  mean: " + str(stats.avg()))
-    print("                   max: " + str(stats.max()))
-    print("                   min: " + str(stats.min()))
-    print("    standard deviation: " + str(stats.std()))
-
+    stats.print()
 

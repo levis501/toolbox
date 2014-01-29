@@ -3,7 +3,7 @@
 import random
 import math
 
-"""A genome is a dictionary with keys as gene names, and with values as tuples of equally probable gene values.
+"""A genome is a dictionary with keys as gene names, and with values as a sequence of equally probable gene values.
 
 e.g.
   genome = {"eyeColor" : ("blue","brown","hazel"),
@@ -93,7 +93,7 @@ class Population:
 
   def addRandomIndividuals(self, n):
     """Add n new random individuals to the population."""
-    for i in range(n):
+    for i in range(n):  # @UnusedVariable
       self.addIndividual(roll(self.genome, self.random))
 
   def addIndividual(self, individual, score=None):
@@ -166,7 +166,7 @@ def demo_main():
     population.addRandomIndividuals(100)
     generation=0
     population.sort()
-    for generation in range(1000):
+    for generation in range(200):
       population.sort()
       if (generation % 50 == 0):
         print("gen %.3d: %s" % (generation, population.population[-1]))
@@ -178,8 +178,25 @@ def demo_main():
     population.sort()
     print()
     print("gen %.3d: %s" % (generation, population.population[-1]))
-    
-    
+
+class Seq:
+  def __init__(self, f, a, b, length):
+    self.f = f
+    self.a = a
+    self.b = b
+    self.length = length
+    self.increment = (a-b)/(length-1)
+  def __len__(self):
+    return self.length
+  def __getitem__(self, key):
+    return self.f(self.a + key * self.increment)
+
+def demo_sequence():
+  import stats
+  G = {"TestSequence" : Seq(lambda x : x**2, 0, 1, 200000)}
+  S = stats.Stats([roll(G)["TestSequence"] for i in range(1000000)],True)  # @UnusedVariable
+  S.print()
 
 if __name__=='__main__':
-    demo_main()
+    demo_sequence()
+#     demo_main()
