@@ -31,10 +31,10 @@ def roulette(population, random=random):
     """Randomly select an individual from the population, weighted by (index+1)."""
     return population[roulette_index(len(population), random)]
 
-def mutate(a, genome, keyProbability=None, random=random):
+def mutate(a, genome, keyProbability=None, random=random, roulette=True):
     """Randomly change each gene with probability keyProbability.
 
-    Mutated genes are selected using roulette probability, weighted by proximity to the original gene.
+    Mutated genes may be selected using roulette probability, weighted by proximity to the original gene.
     If a gene is selected for mutation, there is a equal probability that the mutation will be before
     or after the original gene's value in the genome.  The new gene is then selected using roulette
     probability, sorted by proximity to the original gene.
@@ -46,13 +46,16 @@ def mutate(a, genome, keyProbability=None, random=random):
         # perform the following for each gene randomly selected for mutation
         originalValue = a[key]
         originalIndex = genome[key].index(originalValue)
-        delta = roulette_index(len(genome[key]), random)
-        if random.random() < 0.5:
-          newIndex = (originalIndex + delta) % len(genome[key])
+        if roulette:
+          delta = roulette_index(len(genome[key]), random)
+          if random.random() < 0.5:
+            newIndex = (originalIndex + delta) % len(genome[key])
+          else:
+            newIndex = (originalIndex - delta) % len(genome[key])
+          a[key] = genome[key][newIndex]
         else:
-          newIndex = (originalIndex - delta) % len(genome[key])
-        a[key] = genome[key][newIndex]
-    
+          a[key] = random.choice(genome[key])
+
 def equals(a,b):
     """Return true iff each gene in a is identical in b (and vice versa)"""
     if (a==b):
