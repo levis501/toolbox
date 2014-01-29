@@ -43,6 +43,7 @@ def mutate(a, genome, keyProbability=None, random=random):
       keyProbability = 1 / len(a.keys())
     for key in a.keys():
       if (random.random() <= keyProbability):
+        # perform the following for each gene randomly selected for mutation
         originalValue = a[key]
         L = list(genome[key])
         try:
@@ -179,23 +180,64 @@ def demo_main():
     print()
     print("gen %.3d: %s" % (generation, population.population[-1]))
 
+def demo_seq_score(i):
+  x = i["TestSequence"]
+  return -((x-0.5)**2)
+
 class Seq:
-  def __init__(self, f, a, b, length):
+  def __init__(self, f, finv, a, b, length):
     self.f = f
+    self.finv = finv
     self.a = a
     self.b = b
     self.length = length
     self.increment = (a-b)/(length-1)
   def __len__(self):
     return self.length
-  def __getitem__(self, key):
-    return self.f(self.a + key * self.increment)
+  def __getitem__(self, i):
+    if type(i) != slice:
+      return self.f(self.a + i * self.increment)
+    (start, stop, step) = i.indices(self.length)
+    a=self.f(start)
+    length = (stop - start - 1) // step + 1
+    if length <= 0:
+      return []
+    b=self.f(start + (length-1)*step)
+    return Seq(self.f,self.finv,a,b,length)
+  def __iter__(self):
+    for i in range(0,self.length):
+      yield self[i]
+    return
+  
+def __setitem__(self, key, value):
+#   def __delitem__(self, key):
+  def index(self, x):
+    i = round(self.invf(x))
+    if i<0 or i>=self.length:
+      raise ValueError
+    return i
 
 def demo_sequence():
   import stats
-  G = {"TestSequence" : Seq(lambda x : x**2, 0, 1, 200000)}
-  S = stats.Stats([roll(G)["TestSequence"] for i in range(1000000)],True)  # @UnusedVariable
-  S.print()
+  genome = {"TestSequence" : Seq(lambda i : i**2, lambda x : x**0.5, 0, 1, 200000)}
+  S = stats.Stats([roll(genome)["TestSequence"] for i in range(100000)],True)  # @UnusedVariable
+  S.print() # mean should be near 1/3
+  
+  randomizer = random.Random()
+  randomizer.seed(0)
+  population = Population(genome,demo_seq_score,randomizer)
+  population.addRandomIndividuals(100)
+  population.sort()
+  for generation in range(100):  # @UnusedVariable
+    print(generation)
+    population.evolve(mutation=0.20, elitism=2)
+    population.sort()
+    
+  print("Top individuals:")
+  for i in range(1,11):
+    print("#%d" % (i, population.population[-i]))
+    
+
 
 if __name__=='__main__':
     demo_sequence()
