@@ -92,3 +92,18 @@ if __name__=='__main__':
           continue
     stats.print()
 
+
+class Freq:
+  def __init__(self, initialItems = ()):
+    self.items = {}
+    for item in initialItems:
+      self.add(item)
+  def add(self, item):
+    try:
+      self.items[item] += 1
+    except KeyError:
+      self.items[item] = 1
+  def byFrequency(self):
+    return sorted(self.items.items(), key=lambda i:i[1])
+  def byValues(self):
+    return sorted(self.items.items(), key=lambda i:i[0])

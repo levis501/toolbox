@@ -75,13 +75,24 @@ def countOnesByParcel(a):
     count = 0
     while a > 0:
         b = a & _onesParcelMask
-        count += _onesParcelMap[a & _onesParcelMask]
+        count += _onesParcelMap[b]
         a >>= _onesParcelSize
     return count
-countOnes=countOnesByParcel 
 
-def countZeros(a,n):
-  return n-countOnes(a)
+_countOnesCache = {}
+def countOnes(a, useCache=False):
+  global _countOnesCache
+  if useCache:
+    try:
+      return _countOnesCache[a]
+    except KeyError:
+      count = countOnesByParcel(a)
+      _countOnesCache[a] = count
+      return count
+  return countOnesByParcel(a)
+
+def countZeros(a,n,useCache=False):
+  return n-countOnes(a,useCache)
 
 def bitDistance(a, b):
     return countOnesByParcel(a ^ b)
@@ -115,14 +126,16 @@ class BitwiseData:
     return
   def setValue(self, value):
     self.value = value
-  def countOnes(self):
-    return countOnes(self.value)
-  def countZeros(self):
-    return countZeros(self.value, self.count)
+  def countOnes(self, useCache=False):
+    return countOnes(self.value, useCache)
+  def countZeros(self, useCache=False):
+    return countZeros(self.value, self.count, useCache)
   def __getitem__(self, n):
     return getBit(self.value, n)
   def __setitem__(self, n, b):
     self.value = setBit(self.value, n, b)
+  def flip(self, b):
+    self.value ^= (1 << b)
   def bitStr(self):
     return bitStr(self.value, self.count)
   def __ior__(self, other):

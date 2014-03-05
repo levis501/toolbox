@@ -16,7 +16,13 @@ e.g.
 
 def roll(genome, random=random):
     """Randomly produce a set of genes based on the given genome."""
-    return { key : random.choice(values) for (key,values) in genome.items()}
+    genes = {}
+    for (geneName, gene) in genome.items():
+      if hasattr(gene,"roll"):
+        genes[geneName] = gene.roll()
+      else:
+        genes[geneName] = random.choice(gene)
+    return genes
 
 def cross(a, b, random=random):
     """Create a new set of genes.  Each gene is randomly selected from one of the parents."""
@@ -44,17 +50,20 @@ def mutate(a, genome, keyProbability=None, random=random, roulette=True):
     for key in a.keys():
       if (random.random() <= keyProbability):
         # perform the following for each gene randomly selected for mutation
-        originalValue = a[key]
-        originalIndex = genome[key].index(originalValue)
-        if roulette:
-          delta = roulette_index(len(genome[key]), random)
-          if random.random() < 0.5:
-            newIndex = (originalIndex + delta) % len(genome[key])
-          else:
-            newIndex = (originalIndex - delta) % len(genome[key])
-          a[key] = genome[key][newIndex]
+        if hasattr(genome[key],"mutate"):
+          a[key] = genome[key].mutate(a[key])
         else:
-          a[key] = random.choice(genome[key])
+          originalValue = a[key]
+          originalIndex = genome[key].index(originalValue)
+          if roulette:
+            delta = roulette_index(len(genome[key]), random)
+            if random.random() < 0.5:
+              newIndex = (originalIndex + delta) % len(genome[key])
+            else:
+              newIndex = (originalIndex - delta) % len(genome[key])
+            a[key] = genome[key][newIndex]
+          else:
+            a[key] = random.choice(genome[key])
 
 def equals(a,b):
     """Return true iff each gene in a is identical in b (and vice versa)"""
@@ -145,7 +154,15 @@ def frange(a, b, step):
   while a < b:
     yield a
     a += step
-    
+
+class Gene:
+  def __init__(self, random=random):
+    self.random = random
+  def roll(self):
+    return self.random.random()
+  def mutate(self, prior=None):
+    return self.roll()
+
 
 class Seq:
   def __init__(self, f, finv, a, b, length):
