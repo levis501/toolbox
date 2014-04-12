@@ -215,7 +215,8 @@ class BitwiseData:
       a >>= 1
       i += 1
     return
-
+  def substr(self, start, count):
+    return BitwiseData((self.value >> start) & ((1<<count)-1), count)
 
 
 """Unit Testing"""
@@ -352,6 +353,13 @@ class BitwiseDataTests(unittest.TestCase):
     b = BitwiseData(0b11111111,8)
     a.setOnes(2,5)
     self.assertEqual(a,b)
+
+  def test_substr(self):
+    a = BitwiseData(0b10100111,8)
+    self.assertEqual(a.substr(0,3), BitwiseData(0b111,3))
+    self.assertEqual(a.substr(1,4), BitwiseData(0b0011,4))
+    self.assertEqual(a.substr(2,5), BitwiseData(0b01001,5))
+    self.assertEqual(a.substr(3,5), BitwiseData(0b10100,5))
 
 if __name__=='__main__':
   unittest.main()
