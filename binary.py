@@ -136,8 +136,8 @@ class BitwiseData:
     self.value = setBit(self.value, n, b)
   def flip(self, b):
     self.value ^= (1 << b)
-  def bitStr(self):
-    return bitStr(self.value, self.count)
+  def bitStr(self, separationWidth = None, separationCharacter=' '):
+    return bitStr(self.value, self.count, separationWidth, separationCharacter)
   def __ior__(self, other):
     self.value |= other.value
     return self
