@@ -134,6 +134,14 @@ class BitwiseData:
     return getBit(self.value, n)
   def __setitem__(self, n, b):
     self.value = setBit(self.value, n, b)
+  def __delitem__(self, n):
+    highBits = ((self.value >> (n+1)) << n) 
+    if (n > 0):
+      lowBits = self.value & invert(0, n-1)
+    else:
+      lowBits = 0
+    self.value = highBits | lowBits
+    self.count -= 1
   def flip(self, b):
     self.value ^= (1 << b)
   def bitStr(self, separationWidth = None, separationCharacter=' '):
@@ -360,6 +368,17 @@ class BitwiseDataTests(unittest.TestCase):
     self.assertEqual(a.substr(1,4), BitwiseData(0b0011,4))
     self.assertEqual(a.substr(2,5), BitwiseData(0b01001,5))
     self.assertEqual(a.substr(3,5), BitwiseData(0b10100,5))
+    
+  def test_delitem(self):
+    a = BitwiseData(0b10100111,8)
+    del a[4]
+    self.assertEqual(a, BitwiseData(0b1010111,7))
+    del a[4]
+    self.assertEqual(a, BitwiseData(0b100111,6))
+    del a[0]
+    self.assertEqual(a, BitwiseData(0b10011,5))
+    del a[4]
+    self.assertEqual(a, BitwiseData(0b0011,4))
 
 if __name__=='__main__':
   unittest.main()
