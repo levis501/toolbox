@@ -131,15 +131,17 @@ class Population:
     self.individuals = set(other.individuals)
     self.isSorted = other.isSorted
 
-  def evolve(self, elitism=1, mutation=None):
+  def evolve(self, elitism=1, mutation=None, maxParents=None):
     """Create a new generation of individuals using cross breeding, mutation and elitism."""
     self.sort()
+    if maxParents is None:
+      maxParents = len(self)
     newPopulation = Population(self.genome, self.scoringFunction, self.random)
     for elite in self.population[-elitism:]:
       newPopulation.addIndividual(*elite)
     while len(newPopulation) < self.__len__():
-      a = roulette(self.population, self.random)[0]
-      b = roulette(self.population, self.random)[0]
+      a = roulette(self.population[-maxParents:], self.random)[0]
+      b = roulette(self.population[-maxParents:], self.random)[0]
       while (equals(a,b)):
         b = roulette(self.population, self.random)[0]
       c = cross(a,b)
