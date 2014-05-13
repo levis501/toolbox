@@ -131,7 +131,7 @@ class Population:
     self.individuals = set(other.individuals)
     self.isSorted = other.isSorted
 
-  def evolve(self, elitism=1, mutation=None, maxParents=None):
+  def evolve(self, elitism=0, mutation=None, maxParents=None, individualAdjustmentFunction=None):
     """Create a new generation of individuals using cross breeding, mutation and elitism."""
     self.sort()
     if maxParents is None:
@@ -143,10 +143,12 @@ class Population:
       a = roulette(self.population[-maxParents:], self.random)[0]
       b = roulette(self.population[-maxParents:], self.random)[0]
       while (equals(a,b)):
-        b = roulette(self.population, self.random)[0]
+        b = roulette(self.population[-maxParents:], self.random)[0]
       c = cross(a,b)
-      if (self.random.random() < mutation):
+      if mutation and (self.random.random() < mutation):
         mutate(c, self.genome, mutation, self.random)
+      if not individualAdjustmentFunction is None:
+        c = individualAdjustmentFunction(c)
       if not (c in newPopulation or self.__contains__(c)):
         newPopulation.addIndividual(c)
     self.copyPopulationFrom(newPopulation)
