@@ -182,7 +182,7 @@ class BitwiseData:
   def __hash__(self):
     return self.value % ((1<<31)-1)
   def __repr__(self):
-    return "BitwiseData(0x%X,%d)" % (self.value, self.count)
+    return "BitwiseData(%d,0x%X)" % (self.count, self.value)
   def __str__(self):
     return self.bitStr()
   def __iter__(self):
