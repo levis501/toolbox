@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 
 # quick and dirty backup versions of the given file to a subdirectory named .bu
 # revisions are copied to <filename>;<version_number> (retro throwback to vms)

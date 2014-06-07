@@ -202,6 +202,8 @@ class BitwiseData:
       value >>= 1
       index += 1
     return
+  def zeros(self):
+    return (~self).ones()
   def increaseCapacity(self, increaseAmount):
     self.count += increaseAmount
   def bitDistance(self, other):
@@ -319,6 +321,10 @@ if __name__=='__main__':
   def test_ones(self):
     a = BitwiseData(8,0b11001010)
     self.assertEqual([one for one in a.ones()], [1,3,6,7])
+
+  def test_zeros(self):
+    a = BitwiseData(8,0b11001010)
+    self.assertEqual([zero for zero in a.zeros()], [0,2,4,5])
 
   def test_increaseCapacity(self):
     a = BitwiseData(8,0b11001010)
