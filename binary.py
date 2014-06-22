@@ -121,7 +121,9 @@ class BitwiseData:
     return self.count
   def getBits(self):
     return self.value
-  def setBits(self, bits, start, count):
+  def setBits(self, bits, start=0, count=None):
+    if count is None:
+      count = self.count
     self.value = setBits(self.value, bits, start, count)
     return
   def setValue(self, value):
