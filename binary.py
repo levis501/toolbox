@@ -105,6 +105,16 @@ def highestOneIndex(a):
 def invert(a, bitCount):
   return (~a) + (1 << bitCount)
 
+def rshift(a, bitCount, n):
+  n = n % bitCount
+  if n==0: return a
+  loBits = ((1<<n)-1) & a
+  a >>= n
+  a = setBits(a, loBits, bitCount-n, n)
+  return a
+  
+def lshift(a, bitCount, n):
+  return rshift(a, bitCount, bitCount-n)
 
 class BitwiseData:
   """Encapsulates a binary value and its length"""
@@ -125,7 +135,7 @@ class BitwiseData:
     if count is None:
       count = self.count
     self.value = setBits(self.value, bits, start, count)
-    return
+    return self
   def setValue(self, value):
     self.value = value
   def countOnes(self, useCache=False):
@@ -229,6 +239,10 @@ class BitwiseData:
     return
   def substr(self, start, count):
     return BitwiseData(count,(self.value >> start) & ((1<<count)-1))
+  def rshift(self, n):
+    self.value = rshift(self.value, self.count, n)
+  def lshift(self, n):
+    self.value = lshift(self.value, self.count, n)
 
 
 if __name__ == '__main__':
@@ -388,6 +402,36 @@ if __name__ == '__main__':
       self.assertEqual(a, BitwiseData(5, 0b10011))
       del a[4]
       self.assertEqual(a, BitwiseData(4, 0b0011))
+      
+    def test_rshift(self):
+      a = BitwiseData(5, 0b11010)
+      a.rshift(1)
+      self.assertEqual(a, BitwiseData(5, 0b01101))
+      a.rshift(2)
+      self.assertEqual(a, BitwiseData(5, 0b01011))
+      a.rshift(3)
+      self.assertEqual(a, BitwiseData(5, 0b01101))
+      a.rshift(4)
+      self.assertEqual(a, BitwiseData(5, 0b11010))
+      a.rshift(5)
+      self.assertEqual(a, BitwiseData(5, 0b11010))
+      a.rshift(6)
+      self.assertEqual(a, BitwiseData(5, 0b01101))
+      
+    def test_lshift(self):
+      a = BitwiseData(5, 0b11010)
+      a.lshift(1)
+      self.assertEqual(a, BitwiseData(5, 0b10101))
+      a.lshift(2)
+      self.assertEqual(a, BitwiseData(5, 0b10110))
+      a.lshift(3)
+      self.assertEqual(a, BitwiseData(5, 0b10101))
+      a.lshift(4)
+      self.assertEqual(a, BitwiseData(5, 0b11010))
+      a.lshift(5)
+      self.assertEqual(a, BitwiseData(5, 0b11010))
+      a.lshift(6)
+      self.assertEqual(a, BitwiseData(5, 0b10101))
 
   if __name__ == '__main__':
     unittest.main()
