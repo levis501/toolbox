@@ -218,6 +218,7 @@ class BitwiseData:
     return (~self).ones()
   def increaseCapacity(self, increaseAmount):
     self.count += increaseAmount
+    self.setZeros(self.count - increaseAmount, increaseAmount)
   def bitDistance(self, other):
     return bitDistance(self.value, other.value)
   def setAllZeros(self):
