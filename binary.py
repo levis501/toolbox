@@ -216,6 +216,22 @@ class BitwiseData:
     return
   def zeros(self):
     return (~self).ones()
+  def nthOne(self, n, onesCount=None):
+    if onesCount is None:
+      onesCount = self.countOnes()
+    g = self.ones()
+    while n >= 0:
+      i = next(g)
+      n -= 1
+    return i
+  def nthZero(self, n, zeroCount=None):
+    if zeroCount is None:
+      zeroCount = self.countZeros()
+    g = self.zeros()
+    while n >= 0:
+      i = next(g)
+      n -= 1
+    return i    
   def increaseCapacity(self, increaseAmount):
     self.count += increaseAmount
     self.setZeros(self.count - increaseAmount, increaseAmount)
@@ -262,6 +278,20 @@ if __name__ == '__main__':
     def test_countZeros(self):
       bitwiseData = BitwiseData(8, 0b10010110)
       self.assertEqual(bitwiseData.countZeros(), 4)
+      
+    def test_nthOne(self):
+      bitwiseData = BitwiseData(8, 0b10010110)
+      self.assertEqual(bitwiseData.nthOne(0),1)
+      self.assertEqual(bitwiseData.nthOne(1),2)
+      self.assertEqual(bitwiseData.nthOne(2),4)
+      self.assertEqual(bitwiseData.nthOne(3),7)      
+
+    def test_nthZero(self):
+      bitwiseData = BitwiseData(8, 0b10010110)
+      self.assertEqual(bitwiseData.nthZero(0),0)
+      self.assertEqual(bitwiseData.nthZero(1),3)
+      self.assertEqual(bitwiseData.nthZero(2),5)
+      self.assertEqual(bitwiseData.nthZero(3),6)      
 
     def test_minCount(self):
       self.assertEqual(len(BitwiseData()), 1)
