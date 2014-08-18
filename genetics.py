@@ -168,7 +168,13 @@ class Gene:
     return self.roll()
 
 
-class Seq:
+class Sequence:
+  """A generic indexable, iterable, dynamically generated sequence
+
+  the sequence items are mapped seq[0] = f(a) to seq[length-1] = f(b)
+
+  finv - the inverse of f used to find the closest index to a given sequence function value
+  """
   def __init__(self, f, finv, a, b, length):
     self.f = f
     self.finv = finv
@@ -191,7 +197,7 @@ class Seq:
     if length <= 0:
       return []
     b = a + (length-1)*step * self.increment
-    return Seq(self.f,self.finv,a,b,length)
+    return Sequence(self.f,self.finv,a,b,length)
   def __iter__(self):
     for i in range(0,self.length):
       yield self[i]
@@ -210,7 +216,10 @@ class Seq:
     if i<0 or i>=self.length:
       raise ValueError
     return i
-    
+
+class LinearSequence(Sequence):
+  def __init__(self, a, b, length):
+    super().__init__(lambda x: x, lambda y: y, a, b, length)
 
 def demo_score(i):
     """Score an individual by fit to ax^2+bx+c = e^x in the range [0,1]"""
@@ -256,7 +265,7 @@ def demo_seq_score(i):
 
 def demo_sequence():
   import stats
-  genome = {"TestSequence" : Seq(lambda i : i**2, lambda x : x**0.5, 0, 1, 200000)}
+  genome = {"TestSequence" : Sequence(lambda i : i**2, lambda x : x**0.5, 0, 1, 200000)}
   S = stats.Stats([roll(genome)["TestSequence"] for i in range(10000)],True)  # @UnusedVariable
   S.print() # mean should be near 1/3
   
