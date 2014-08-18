@@ -133,7 +133,7 @@ class BitwiseData:
     return self.value
   def setBits(self, bits, start=0, count=None):
     if count is None:
-      count = self.count
+      count = self.count-start
     self.value = setBits(self.value, bits, start, count)
     return self
   def setValue(self, value):
