@@ -97,13 +97,27 @@ def countZeros(a,n,useCache=False):
 def bitDistance(a, b):
     return countOnesByParcel(a ^ b)
 
-def highestOneIndex(a):
+def highestOneIndexSlow(a):
   result = -1
   while a > 0:
     result += 1
     a >>= 1
   return result
-#   return int(math.log(a)/math.log(2))
+
+def highestOneIndex(a):
+  if a==0:
+    return -1
+  n64 = 0
+  x = a >> 64
+  while x > 0:
+    n64 += 1
+    x >>= 64
+  n = 64 * n64
+  x = a >> (n+1)
+  while x > 0:
+    n += 1
+    x >>= 1
+  return n
 
 def invert(a, bitCount):
   return (~a) + (1 << bitCount)
@@ -270,6 +284,16 @@ class BitwiseData:
 if __name__ == '__main__':
   """Unit Testing"""
   import unittest
+
+  class BinaryTests(unittest.TestCase):
+    def test_highestOneIndex(self):
+      self.assertEqual(highestOneIndex(0), -1)
+      self.assertEqual(highestOneIndex(0xFF), 7)
+      self.assertEqual(highestOneIndex(1 << 63), 63)
+      self.assertEqual(highestOneIndex((1 << 64)-1), 63)
+      self.assertEqual(highestOneIndex(1 << 128), 128)
+      self.assertEqual(highestOneIndex(1 << 1023), 1023)
+      self.assertEqual(highestOneIndex((1 << 1024)-1), 1023)
 
   class BitwiseDataTests(unittest.TestCase):
     def test_len(self):
@@ -468,11 +492,6 @@ if __name__ == '__main__':
       self.assertEqual(a, BitwiseData(5, 0b11010))
       a.lshift(6)
       self.assertEqual(a, BitwiseData(5, 0b10101))
-
-    def test_highestOneIndex(self):
-      self.assertEqual(highestOneIndex(1 << 128), 128)
-      self.assertEqual(highestOneIndex(1 << 63), 63)
-      self.assertEqual(highestOneIndex((1 << 64)-1), 63)
 
   if __name__ == '__main__':
     unittest.main()
