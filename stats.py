@@ -7,17 +7,20 @@ import sys
 from math import sqrt
 
 class Stats:
+  MAX_UNIQUES_UNFLAGGED=16384
   def __init__(self, initialData=[], trackUniques=False):
     self.dataCount = 0
     self.dataSum = 0
     self.dataSquaredSum = 0
     self.dataMax = None
     self.dataMin = None
-    if trackUniques:
-      self.dataUniques = set()
-    else:
-      self.dataUniques = None
+    self.trackUniques = trackUniques
+    self.dataUniques = set()
     self.addAll(initialData)
+#    if trackUniques:
+#      self.dataUniques = set()
+#    else:
+#      self.dataUniques = None
 
   def add(self, datum):
     self.dataCount += 1
@@ -33,6 +36,8 @@ class Stats:
       self.dataMin = datum
     if self.dataUniques != None:
       self.dataUniques.add(datum)
+      if (not self.trackUniques) and (len(self.dataUniques) > Stats.MAX_UNIQUES_UNFLAGGED):
+        self.dataUniques = None
 
   def addAll(self, data):
     for datum in data:
