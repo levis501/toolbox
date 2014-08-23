@@ -118,11 +118,13 @@ def lshift(a, bitCount, n):
 
 class BitwiseData:
   """Encapsulates a binary value and its length"""
-  def __init__(self, count=1, value=0):
+  def __init__(self, count=None, value=0):
     self.value = value
     minBits = 1 + highestOneIndex(value)
-    if count < minBits:
-      self.count = minBits
+    if (count is None):
+      self.count = max(minBits,1)
+    elif count < minBits:
+      raise ValueError("count parameter %d is insufficeint to hold value with hi bit %d" % (count, minBits))
     else:
       self.count = count
   def copy(self):
@@ -463,6 +465,11 @@ if __name__ == '__main__':
       self.assertEqual(a, BitwiseData(5, 0b11010))
       a.lshift(6)
       self.assertEqual(a, BitwiseData(5, 0b10101))
+
+    def test_highestOneIndex(self):
+      self.assertEqual(highestOneIndex(1 << 128), 128)
+      self.assertEqual(highestOneIndex(1 << 63), 63)
+#       self.assertEqual(highestOneIndex((1 << 64)-1), 63)
 
   if __name__ == '__main__':
     unittest.main()
