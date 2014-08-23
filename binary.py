@@ -98,9 +98,12 @@ def bitDistance(a, b):
     return countOnesByParcel(a ^ b)
 
 def highestOneIndex(a):
-  if a==0:
-    return -1
-  return int(math.log(a)/math.log(2))
+  result = -1
+  while a > 0:
+    result += 1
+    a >>= 1
+  return result
+#   return int(math.log(a)/math.log(2))
 
 def invert(a, bitCount):
   return (~a) + (1 << bitCount)
@@ -469,7 +472,7 @@ if __name__ == '__main__':
     def test_highestOneIndex(self):
       self.assertEqual(highestOneIndex(1 << 128), 128)
       self.assertEqual(highestOneIndex(1 << 63), 63)
-#       self.assertEqual(highestOneIndex((1 << 64)-1), 63)
+      self.assertEqual(highestOneIndex((1 << 64)-1), 63)
 
   if __name__ == '__main__':
     unittest.main()
