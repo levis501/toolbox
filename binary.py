@@ -162,6 +162,10 @@ class BitwiseData:
   def countZeros(self, useCache=False):
     return countZeros(self.value, self.count, useCache)
   def __getitem__(self, n):
+    if isinstance(n, slice):
+      if n.step != 1 and (not n.step is None):
+        raise Exception("slice step != 1 not yet implemented (%s)" % str(n.step))
+      return self.substr(n.start, n.stop-n.start)
     return getBit(self.value, n)
   def __setitem__(self, n, b):
     self.value = setBit(self.value, n, b)
