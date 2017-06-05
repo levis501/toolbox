@@ -146,6 +146,11 @@ class BitwiseData:
       self.count = count
   def copy(self):
     return BitwiseData(self.count, self.value)
+  def createFromList(bitList):
+    value = 0
+    for (i,bit) in enumerate(bitList):
+      value += (bit << i)
+    return BitwiseData(len(bitList), value)
   def __len__(self):
     return self.count
   def getBits(self):
@@ -492,6 +497,15 @@ if __name__ == '__main__':
       self.assertEqual(a, BitwiseData(5, 0b11010))
       a.lshift(6)
       self.assertEqual(a, BitwiseData(5, 0b10101))
+
+    def test_fromList(self):
+      a = BitwiseData.createFromList([0])
+      self.assertEqual(a, BitwiseData(1, 0b0))
+      a = BitwiseData.createFromList([1])
+      self.assertEqual(a, BitwiseData(1, 0b1))
+      a = BitwiseData.createFromList([1,0,0,1,0,1,1,0])
+      self.assertEqual(a, BitwiseData(8, 0b01101001))
+
 
   if __name__ == '__main__':
     unittest.main()
