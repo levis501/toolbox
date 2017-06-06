@@ -133,6 +133,12 @@ def rshift(a, bitCount, n):
 def lshift(a, bitCount, n):
   return rshift(a, bitCount, bitCount-n)
 
+def fromList(bitList):
+  value = 0
+  for (i,bit) in enumerate(bitList):
+    value += (bit << i)
+  return value
+
 class BitwiseData:
   """Encapsulates a binary value and its length"""
   def __init__(self, count=None, value=0):
@@ -147,10 +153,7 @@ class BitwiseData:
   def copy(self):
     return BitwiseData(self.count, self.value)
   def createFromList(bitList):
-    value = 0
-    for (i,bit) in enumerate(bitList):
-      value += (bit << i)
-    return BitwiseData(len(bitList), value)
+    return BitwiseData(len(bitList), fromList(bitList))
   def __len__(self):
     return self.count
   def getBits(self):
