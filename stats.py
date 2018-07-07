@@ -71,10 +71,15 @@ class Stats:
     else:
       return len(self.dataUniques)
 
+  def var(self):
+    if self.dataCount==0:
+      return "undef"
+    return self.avg2() - self.avg()**2
+
   def std(self):
     if self.dataCount==0:
       return "undef"
-    return sqrt(self.avg2() - self.avg()**2)
+    return sqrt(self.var())
 
   def print(self):
     print("       number of items: " + str(self.N()))
