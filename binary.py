@@ -25,7 +25,7 @@ def getBits(a, n):
     n -= 1
 
 def getIndexedBits(a, n):
-  i = 0;
+  i = 0
   while (i < n):
     yield (i, a & 0x1)
     a >>= 1
@@ -47,12 +47,13 @@ def clearBit(i, n):
 
 def bitStr(a, n, separationWidth = None, separationCharacter=' '):
     s = ''.join([repr(num) for num in getBits(a,n)])[::-1]
-    if separationWidth == None:
+    if separationWidth is None:
         return s
     t = ""
+    offset = -1 * separationWidth
     while len(s) > 0:
-        t = s[-separationWidth:] + separationCharacter + t
-        s = s[:-separationWidth]
+        t = s[offset:] + separationCharacter + t
+        s = s[:offset]
     if (t[-1]==separationCharacter):
         t = t[:-1]
     return t
@@ -152,8 +153,6 @@ class BitwiseData:
       self.count = count
   def copy(self):
     return BitwiseData(self.count, self.value)
-  def createFromList(bitList):
-    return BitwiseData(len(bitList), fromList(bitList))
   def __len__(self):
     return self.count
   def getBits(self):
@@ -275,7 +274,7 @@ class BitwiseData:
   def getIndexedBits(self):
     a = self.value
     n = self.count
-    i = 0;
+    i = 0
     while (i < n):
       yield (i, a & 0x1)
       a >>= 1
@@ -287,6 +286,17 @@ class BitwiseData:
     self.value = rshift(self.value, self.count, n)
   def lshift(self, n):
     self.value = lshift(self.value, self.count, n)
+
+  @staticmethod
+  def concat(a, b):
+    c = b.copy()
+    c.increaseCapacity(a.count)
+    c.setBits(a.value, b.count)
+    return c
+
+  @staticmethod
+  def createFromList(bitList):
+    return BitwiseData(len(bitList), fromList(bitList))
 
 
 if __name__ == '__main__':
@@ -508,6 +518,12 @@ if __name__ == '__main__':
       self.assertEqual(a, BitwiseData(1, 0b1))
       a = BitwiseData.createFromList([1,0,0,1,0,1,1,0])
       self.assertEqual(a, BitwiseData(8, 0b01101001))
+
+    def test_concat(self):
+      a = BitwiseData(5, 0b11010)
+      b = BitwiseData(3, 0b010)
+      c = BitwiseData.concat(a, b)
+      self.assertEqual(c, BitwiseData(8, 0b11010010))
 
 
   if __name__ == '__main__':
