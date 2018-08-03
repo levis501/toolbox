@@ -166,12 +166,13 @@ class BitwiseData:
     return countOnes(self.value, useCache)
   def countZeros(self, useCache=False):
     return countZeros(self.value, self.count, useCache)
-  def __getitem__(self, n):
-    if isinstance(n, slice):
-      if n.step != 1 and (not n.step is None):
-        raise Exception("slice step != 1 not yet implemented (%s)" % str(n.step))
-      return self.substr(n.start, n.stop-n.start)
-    return getBit(self.value, n)
+  def __getitem__(self, key):
+    if isinstance(key, slice):
+      s = list(self)[key]
+      if len(s) < 1:
+        raise ValueError("Cannot slice BinaryData to zero bits (%s)" % key)
+      return BitwiseData.createFromList(s)
+    return getBit(self.value, key)
   def __setitem__(self, n, b):
     self.value = setBit(self.value, n, b)
   def __delitem__(self, n):
@@ -572,6 +573,14 @@ if __name__ == '__main__':
       self.assertEqual(b, BitwiseData(5, 0b01011))
       c = BitwiseData(5, 0b01011)
       self.assertEqual(c, BitwiseData(5, 0b01011))
+
+    def test_slice(self):
+      a = BitwiseData(8, 0b10110100)
+      self.assertEqual(a[:], 0b10110100)
+      self.assertEqual(a[0:], 0b10110100)
+      self.assertEqual(a[1:], 0b1011010)
+      self.assertEqual(a[::-1], 0b00101101)
+      self.assertEqual(a[5:3:-1], 0b11)
 
   if __name__ == '__main__':
     unittest.main()
