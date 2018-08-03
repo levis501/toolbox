@@ -266,7 +266,7 @@ class BitwiseData:
     self.count += increaseAmount
     self.setZeros(self.count - increaseAmount, increaseAmount)
   def bitDistance(self, other):
-    return bitDistance(self.value, other.value)
+    return bitDistance(self.value, other.value if type(other)==BitwiseData else other)
   def setAllZeros(self):
     self.value = 0
   def setAllOnes(self):
@@ -290,6 +290,8 @@ class BitwiseData:
     self.value = rshift(self.value, self.count, n)
   def lshift(self, n):
     self.value = lshift(self.value, self.count, n)
+  def correlate(self, other):
+    return self.count - 2 * self.bitDistance(other)
 
   @staticmethod
   def concat(a, b):
@@ -539,6 +541,17 @@ if __name__ == '__main__':
       b = BitwiseData(3, 0b010)
       c = BitwiseData.concat(a, b)
       self.assertEqual(c, BitwiseData(8, 0b11010010))
+
+    def test_correlate(self):
+      a = BitwiseData(5, 0b11010)
+      b = BitwiseData(5, 0b10101)
+      self.assertEqual(a.correlate(b), -3)
+      self.assertEqual(b.correlate(a), -3)
+      c = BitwiseData(8, 0b11110000)
+      d = BitwiseData(8, 0b11100001)
+      self.assertEqual(c.correlate(d), 4)
+      self.assertEqual(d.correlate(c), 4)
+
 
 
   if __name__ == '__main__':
