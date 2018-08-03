@@ -25,7 +25,7 @@ def getBits(a, n):
     n -= 1
 
 def getIndexedBits(a, n):
-  i = 0;
+  i = 0
   while (i < n):
     yield (i, a & 0x1)
     a >>= 1
@@ -47,12 +47,13 @@ def clearBit(i, n):
 
 def bitStr(a, n, separationWidth = None, separationCharacter=' '):
     s = ''.join([repr(num) for num in getBits(a,n)])[::-1]
-    if separationWidth == None:
+    if separationWidth is None:
         return s
     t = ""
+    offset = -1 * separationWidth
     while len(s) > 0:
-        t = s[-separationWidth:] + separationCharacter + t
-        s = s[:-separationWidth]
+        t = s[offset:] + separationCharacter + t
+        s = s[:offset]
     if (t[-1]==separationCharacter):
         t = t[:-1]
     return t
@@ -133,6 +134,12 @@ def rshift(a, bitCount, n):
 def lshift(a, bitCount, n):
   return rshift(a, bitCount, bitCount-n)
 
+def fromList(bitList):
+  value = 0
+  for (i,bit) in enumerate(bitList):
+    value += (bit << i)
+  return value
+
 class BitwiseData:
   """Encapsulates a binary value and its length"""
   def __init__(self, count=None, value=0):
@@ -148,8 +155,6 @@ class BitwiseData:
     return BitwiseData(self.count, self.value)
   def __len__(self):
     return self.count
-  def getBits(self):
-    return self.value
   def setBits(self, bits, start=0, count=None):
     if count is None:
       count = self.count-start
@@ -182,21 +187,21 @@ class BitwiseData:
   def bitStr(self, separationWidth = None, separationCharacter=' '):
     return bitStr(self.value, self.count, separationWidth, separationCharacter)
   def __ior__(self, other):
-    self.value |= other.value
+    self.value |= other.value if (type(other)==BitwiseData) else other
     return self
   def __or__(self, other):
     result = self.copy()
     result |= other
     return result
   def __ixor__(self, other):
-    self.value ^= other.value
+    self.value ^= other.value if (type(other)==BitwiseData) else other
     return self
   def __xor__(self, other):
     result = self.copy()
     result ^= other
     return result
   def __iand__(self, other):
-    self.value &= other.value
+    self.value &= other.value if (type(other)==BitwiseData) else other
     return self
   def __and__(self, other):
     result= self.copy()
@@ -207,17 +212,23 @@ class BitwiseData:
     result.value = invert(result.value, result.count)
     return result
   def __eq__(self, other):
-    if other == None:
+    if other is None:
       return False
-    return self.value == other.value and self.count == other.count
+    if (type(other) == BitwiseData):
+      return self.value == other.value and self.count == other.count
+    else:
+      return self.value == other
   def __ne__(self, other):
-    if other ==None:
-      return False
-    return self.value != other.value or self.count != other.count
+    if other is None:
+      return True
+    if (type(other) == BitwiseData):
+      return self.value != other.value or self.count != other.count
+    else:
+      return self.value != other
   def __hash__(self):
     return self.value % ((1<<31)-1)
   def __repr__(self):
-    return "BitwiseData(%d,0x%X)" % (self.count, self.value)
+    return "0b" + self.__str__()
   def __str__(self):
     return self.bitStr()
   def __iter__(self):
@@ -259,7 +270,7 @@ class BitwiseData:
     self.count += increaseAmount
     self.setZeros(self.count - increaseAmount, increaseAmount)
   def bitDistance(self, other):
-    return bitDistance(self.value, other.value)
+    return bitDistance(self.value, other.value if type(other)==BitwiseData else other)
   def setAllZeros(self):
     self.value = 0
   def setAllOnes(self):
@@ -271,7 +282,7 @@ class BitwiseData:
   def getIndexedBits(self):
     a = self.value
     n = self.count
-    i = 0;
+    i = 0
     while (i < n):
       yield (i, a & 0x1)
       a >>= 1
@@ -283,6 +294,28 @@ class BitwiseData:
     self.value = rshift(self.value, self.count, n)
   def lshift(self, n):
     self.value = lshift(self.value, self.count, n)
+  def correlate(self, other):
+    return self.count - 2 * self.bitDistance(other)
+
+  @staticmethod
+  def concat(a, b):
+    c = b.copy()
+    c.increaseCapacity(a.count)
+    c.setBits(a.value, b.count)
+    return c
+
+  @staticmethod
+  def createFromList(bitList):
+    return BitwiseData(len(bitList), fromList(bitList))
+
+  @staticmethod
+  def convert(origin, count=None):
+    if type(origin) == list:
+      return BitwiseData.createFromList(origin)
+    if type(origin) == BitwiseData:
+      return origin
+    if type(origin) == int:
+      return BitwiseData(count, origin)
 
 
 if __name__ == '__main__':
@@ -356,42 +389,53 @@ if __name__ == '__main__':
     def test_setBits(self):
       bd = BitwiseData(8, 0b11010111)
       bd.setBits(0b1010, 2, 4)
-      self.assertEqual(bd.getBits(), 0b11101011)
+      self.assertEqual(bd, 0b11101011)
+
+    def test_equal(self):
+      bd = BitwiseData(8, 0b01010111)
+      self.assertTrue(bd == bd)
+      self.assertFalse(bd == None)
+      self.assertEqual(bd, BitwiseData(8, 0b01010111))
+      self.assertEqual(bd, 0b01010111)
 
     def test_xor(self):
       bd1 = BitwiseData(4, 0b1100)
       bd2 = BitwiseData(4, 0b1010)
       bd1 ^= bd2
-      self.assertEqual(bd1.getBits(), 0b0110)
+      self.assertEqual(bd1, 0b0110)
       bd3 = bd2 ^ BitwiseData(4, 0b0110)
-      self.assertEqual(bd3.getBits(), 0b1100)
+      self.assertEqual(bd3, 0b1100)
+      bd4 = bd3 ^ 0b1001
+      self.assertEqual(bd4, 0b0101)
 
     def test_invert(self):
       bd = ~BitwiseData(4, 0b1010)
-      self.assertEqual(bd.getBits(), 0b0101)
+      self.assertEqual(bd, 0b0101)
       bd = ~BitwiseData(4, 0)
-      self.assertEqual(bd.getBits(), 0b1111)
+      self.assertEqual(bd, 0b1111)
 
     def test_copy(self):
       a = BitwiseData(8, 0b11001010).copy()
-      self.assertEqual(a.getBits(), 0b11001010)
+      self.assertEqual(a, 0b11001010)
 
     def test_and(self):
       bd1 = BitwiseData(4, 0b1100)
       bd2 = BitwiseData(4, 0b1010)
       bd1 &= bd2
-      self.assertEqual(bd1.getBits(), 0b1000)
+      self.assertEqual(bd1, 0b1000)
       bd3 = bd2 & BitwiseData(4, 0b0110)
-      self.assertEqual(bd3.getBits(), 0b0010)
+      self.assertEqual(bd3, 0b0010)
 
     def test_or(self):
       bd1 = BitwiseData(4, 0b1100)
       bd2 = BitwiseData(4, 0b1010)
       bd1 |= bd2
-      self.assertEqual(bd1.getBits(), 0b1110)
+      self.assertEqual(bd1, 0b1110)
       bd1 = BitwiseData(4, 0b0101)
       bd3 = bd1 | bd2
-      self.assertEqual(bd3.getBits(), 0b1111)
+      self.assertEqual(bd3, 0b1111)
+      bd4 = bd1 | 0b1010
+      self.assertEqual(bd4, 0b1111)
 
     def test_iter(self):
       a = BitwiseData(8, 0b11001010)
@@ -496,6 +540,38 @@ if __name__ == '__main__':
       self.assertEqual(a, BitwiseData(5, 0b11010))
       a.lshift(6)
       self.assertEqual(a, BitwiseData(5, 0b10101))
+
+    def test_fromList(self):
+      a = BitwiseData.createFromList([0])
+      self.assertEqual(a, BitwiseData(1, 0b0))
+      a = BitwiseData.createFromList([1])
+      self.assertEqual(a, BitwiseData(1, 0b1))
+      a = BitwiseData.createFromList([1,0,0,1,0,1,1,0])
+      self.assertEqual(a, BitwiseData(8, 0b01101001))
+
+    def test_concat(self):
+      a = BitwiseData(5, 0b11010)
+      b = BitwiseData(3, 0b010)
+      c = BitwiseData.concat(a, b)
+      self.assertEqual(c, BitwiseData(8, 0b11010010))
+
+    def test_correlate(self):
+      a = BitwiseData(5, 0b11010)
+      b = BitwiseData(5, 0b10101)
+      self.assertEqual(a.correlate(b), -3)
+      self.assertEqual(b.correlate(a), -3)
+      c = BitwiseData(8, 0b11110000)
+      d = BitwiseData(8, 0b11100001)
+      self.assertEqual(c.correlate(d), 4)
+      self.assertEqual(d.correlate(c), 4)
+
+    def test_convert(self):
+      a = BitwiseData.convert(0b01011, 5)
+      self.assertEqual(a, BitwiseData(5, 0b01011))
+      b = BitwiseData.convert([1, 1, 0, 1, 0])
+      self.assertEqual(b, BitwiseData(5, 0b01011))
+      c = BitwiseData(5, 0b01011)
+      self.assertEqual(c, BitwiseData(5, 0b01011))
 
   if __name__ == '__main__':
     unittest.main()

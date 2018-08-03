@@ -167,6 +167,16 @@ class Gene:
   def mutate(self, prior=None):
     return self.roll()
 
+class FloatGene:
+  def __init__(self, lo, hi, random=random):
+    self.random = random
+    self.lo = lo
+    self.hi = hi
+  def roll(self):
+    return random.random * (self.hi-self.lo) + self.lo
+  def mutate(self, prior=None):
+    return self.roll
+
 
 class Sequence:
   """A generic indexable, iterable, dynamically generated sequence
