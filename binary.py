@@ -304,6 +304,15 @@ class BitwiseData:
   def createFromList(bitList):
     return BitwiseData(len(bitList), fromList(bitList))
 
+  @staticmethod
+  def convert(origin, count=None):
+    if type(origin) == list:
+      return BitwiseData.createFromList(origin)
+    if type(origin) == BitwiseData:
+      return origin
+    if type(origin) == int:
+      return BitwiseData(count, origin)
+
 
 if __name__ == '__main__':
   """Unit Testing"""
@@ -552,7 +561,13 @@ if __name__ == '__main__':
       self.assertEqual(c.correlate(d), 4)
       self.assertEqual(d.correlate(c), 4)
 
-
+    def test_convert(self):
+      a = BitwiseData.convert(0b01011, 5)
+      self.assertEqual(a, BitwiseData(5, 0b01011))
+      b = BitwiseData.convert([1, 1, 0, 1, 0])
+      self.assertEqual(b, BitwiseData(5, 0b01011))
+      c = BitwiseData(5, 0b01011)
+      self.assertEqual(c, BitwiseData(5, 0b01011))
 
   if __name__ == '__main__':
     unittest.main()
