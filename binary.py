@@ -137,7 +137,7 @@ def lshift(a, bitCount, n):
 def fromList(bitList):
   value = 0
   for (i,bit) in enumerate(bitList):
-    value += (bit << i)
+    value += (int(bit) << i)
   return value
 
 class BitwiseData:
