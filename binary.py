@@ -3,6 +3,7 @@
 # binary.py
 
 import math
+import random
 
 
 def setBits(dest, bits, start, count):
@@ -153,6 +154,8 @@ class BitwiseData:
       self.count = count
   def copy(self):
     return BitwiseData(self.count, self.value)
+  def randomize(self, rng=random.getrandbits):
+    self.value = rng(self.count)
   def __len__(self):
     return self.count
   def setBits(self, bits, start=0, count=None):
@@ -581,6 +584,15 @@ if __name__ == '__main__':
       self.assertEqual(a[1:], 0b1011010)
       self.assertEqual(a[::-1], 0b00101101)
       self.assertEqual(a[5:3:-1], 0b11)
+
+    def mock_rng8(self, bitsRequested):
+      self.assertEqual(bitsRequested, 8, "This mock reqires an arguemnt of 8")
+      return 0b10110001
+
+    def test_randomize(self):
+      a = BitwiseData(8, 0b00011011)
+      a.randomize(rng=self.mock_rng8)
+      self.assertEqual(a, BitwiseData(8, 0b10110001))
 
   if __name__ == '__main__':
     unittest.main()
