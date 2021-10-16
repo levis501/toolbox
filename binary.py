@@ -4,7 +4,7 @@
 
 import math
 import random
-
+from functools import reduce
 
 def setBits(dest, bits, start, count):
     hi = dest & ((1 << start) - 1)
@@ -302,10 +302,13 @@ class BitwiseData:
     return self.count - 2 * self.bitDistance(other)
 
   @staticmethod
-  def concat(a, b):
-    c = b.copy()
-    c.increaseCapacity(a.count)
-    c.setBits(a.value, b.count)
+  def concat(a, b=None):
+    if (b == None):
+      c = reduce(BitwiseData.concat, a)
+    else:
+      c = a.copy()
+      c.increaseCapacity(b.count)
+      c.setBits(b.value, a.count)
     return c
 
   @staticmethod
@@ -320,7 +323,6 @@ class BitwiseData:
       return origin
     if type(origin) == int:
       return BitwiseData(count, origin)
-
 
 if __name__ == '__main__':
   """Unit Testing"""
@@ -556,8 +558,13 @@ if __name__ == '__main__':
     def test_concat(self):
       a = BitwiseData(5, 0b11010)
       b = BitwiseData(3, 0b010)
-      c = BitwiseData.concat(a, b)
-      self.assertEqual(c, BitwiseData(8, 0b11010010))
+      c = BitwiseData.concat([a, b])
+      self.assertEqual(c, BitwiseData(8, 0b01011010))
+      d = BitwiseData.concat([a, b])
+      self.assertEqual(d, BitwiseData(8, 0b01011010))
+      e = BitwiseData(9, 0b1)
+      f = BitwiseData.concat([a, b, e])
+      self.assertEqual(f, BitwiseData(17, 0b101011010));
 
     def test_correlate(self):
       a = BitwiseData(5, 0b11010)
