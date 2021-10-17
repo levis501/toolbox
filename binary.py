@@ -300,6 +300,8 @@ class BitwiseData:
     self.value = lshift(self.value, self.count, n)
   def correlate(self, other):
     return self.count - 2 * self.bitDistance(other)
+  def reversed(self):
+    return BitwiseData.convert(reversed(self))
 
   @staticmethod
   def concat(a, b=None):
@@ -323,6 +325,11 @@ class BitwiseData:
       return origin
     if type(origin) == int:
       return BitwiseData(count, origin)
+    try:
+      iter(origin)
+      return BitwiseData.createFromList(list(origin))
+    except TypeError:
+      raise NotImplementedError(f'No conversion exists for type {type(origin)}')
 
 if __name__ == '__main__':
   """Unit Testing"""
@@ -600,6 +607,11 @@ if __name__ == '__main__':
       a = BitwiseData(8, 0b00011011)
       a.randomize(rng=self.mock_rng8)
       self.assertEqual(a, BitwiseData(8, 0b10110001))
+
+    def test_reversed(self):
+      a = BitwiseData(8, 0b01110001)
+      b = a.reversed()
+      self.assertEqual(b, BitwiseData(8, 0b10001110))
 
   if __name__ == '__main__':
     unittest.main()
