@@ -143,7 +143,7 @@ def fromList(bitList):
 
 class BitwiseData:
   """Encapsulates a binary value and its length"""
-  def __init__(self, count=None, value=0):
+  def __init__(self, count=None, value=0, msb_first=False):
     self.value = value
     minBits = 1 + highestOneIndex(value)
     if (count is None):
@@ -152,6 +152,9 @@ class BitwiseData:
       raise ValueError("count parameter %d is insufficeint to hold value with hi bit %d" % (count, minBits))
     else:
       self.count = count
+    if msb_first:
+      self.value = self.reversed().value
+    
   def copy(self):
     return BitwiseData(self.count, self.value)
   def randomize(self, rng=random.getrandbits):
@@ -357,6 +360,12 @@ if __name__ == '__main__':
     def test_countZeros(self):
       bitwiseData = BitwiseData(8, 0b10010110)
       self.assertEqual(bitwiseData.countZeros(), 4)
+
+    def test_msbFirst(self):
+      a = BitwiseData(8, 0b10010110, msb_first=True)
+      b = BitwiseData(8, 0b01101001, msb_first=False)
+      self.assertEqual(a, b)
+
       
     def test_nthOne(self):
       bitwiseData = BitwiseData(8, 0b10010110)
