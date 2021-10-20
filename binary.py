@@ -306,6 +306,7 @@ class BitwiseData:
   def reversed(self):
     return BitwiseData.convert(reversed(self))
   def append(self, appendage):
+    appendage = BitwiseData.convert(appendage)
     original_count = self.count
     self.increaseCapacity(appendage.count)
     self.setBits(appendage.value, original_count)
@@ -590,6 +591,10 @@ if __name__ == '__main__':
       b = BitwiseData(3, 0b010)
       a.append(b)
       self.assertEqual(a, BitwiseData(8, 0b01011010))
+      a.append(1)
+      self.assertEqual(a, BitwiseData(9, 0b101011010))
+      a.append(0)
+      self.assertEqual(a, BitwiseData(10, 0b0101011010))
 
     def test_correlate(self):
       a = BitwiseData(5, 0b11010)
