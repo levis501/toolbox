@@ -159,6 +159,7 @@ class BitwiseData:
     return BitwiseData(self.count, self.value)
   def randomize(self, rng=random.getrandbits):
     self.value = rng(self.count)
+    return self
   def __len__(self):
     return self.count
   def setBits(self, bits, start=0, count=None):
@@ -628,8 +629,9 @@ if __name__ == '__main__':
 
     def test_randomize(self):
       a = BitwiseData(8, 0b00011011)
-      a.randomize(rng=self.mock_rng8)
+      b = a.randomize(rng=self.mock_rng8)
       self.assertEqual(a, BitwiseData(8, 0b10110001))
+      self.assertEqual(b, a)
 
     def test_reversed(self):
       a = BitwiseData(8, 0b01110001)
