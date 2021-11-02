@@ -143,6 +143,7 @@ def fromList(bitList):
 
 class BitwiseData:
   """Encapsulates a binary value and its length"""
+  DEFAULT_STRING_SEPARATION = None
   def __init__(self, count=None, value=0, msb_first=False):
     self.value = value
     minBits = 1 + highestOneIndex(value)
@@ -193,6 +194,8 @@ class BitwiseData:
   def flip(self, b):
     self.value ^= (1 << b)
   def bitStr(self, separationWidth = None, separationCharacter=' '):
+    if separationWidth == None:
+      separationWidth = BitwiseData.DEFAULT_STRING_SEPARATION
     return bitStr(self.value, self.count, separationWidth, separationCharacter)
   def __ior__(self, other):
     self.value |= other.value if (type(other)==BitwiseData) else other
