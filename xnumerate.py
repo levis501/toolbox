@@ -14,7 +14,9 @@ def isXnumberable(o):
 
 class xnumerate:
   def __init__(self, subject):
+    _ = iter(subject) # raises TypeError of subject isn't iterable
     self._subject = subject
+    
   def __iter__(self):
     self._iter_stack = [iter(self._subject)]
     self._index_stack = [0]
@@ -58,8 +60,8 @@ if __name__ == '__main__':
       i = iter(xnumerate([]))
       self.assertRaises(StopIteration, next, i)
     
-    # def test_xnumerateArgumentNotIterable(self): 
-    #   self.assertRaises(TypeError, xnumerate, 7)
+    def test_xnumerateArgumentNotIterable(self): 
+      self.assertRaises(TypeError, xnumerate, 7)
 
     def test_xnumerateOneItem(self):
       i = iter(xnumerate([6]))
@@ -84,14 +86,24 @@ if __name__ == '__main__':
       self.assertEqual(next(i), ((1, 1), 10))
       self.assertRaises(StopIteration, next, i)
 
-    
+    def test_xnumerateStringMixed(self):
+      i = iter(xnumerate(['ab',['c', 'd']]))
+      self.assertEqual(next(i), ((0, 0), 'a'))
+      self.assertEqual(next(i), ((0, 1), 'b'))
+      self.assertEqual(next(i), ((1, 0), 'c'))
+      self.assertEqual(next(i), ((1, 1), 'd'))
+      self.assertRaises(StopIteration, next, i)
 
-    # def test_xnumerate2D(self):
-    #   i = iter(xnumerate([['a','b'],['y','z']]))
-    #   self.assertEqual(next(i), ((0, 0), 'a'))
-    #   self.assertEqual(next(i), ((0, 1), 'b'))
-    #   self.assertEqual(next(i), ((1, 0), 'y'))
-    #   self.assertEqual(next(i), ((1, 0), 'z'))
+    def test_xnumerateString2x2(self):
+      i = iter(xnumerate([['a','b'],['y','z']]))
+      self.assertEqual(next(i), ((0, 0), 'a'))
+      self.assertEqual(next(i), ((0, 1), 'b'))
+      self.assertEqual(next(i), ((1, 0), 'y'))
+      self.assertEqual(next(i), ((1, 1), 'z'))
+
+    def test_xnumerateSingleCharacter(self):
+      i = iter(xnumerate('a'))
+      self.assertEqual(next(i), (0, 'a'))
 
 
 
