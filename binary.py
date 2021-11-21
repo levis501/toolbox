@@ -193,6 +193,7 @@ class BitwiseData:
     self.count -= 1
   def flip(self, b):
     self.value ^= (1 << b)
+    return self
   def bitStr(self, separationWidth = None, separationCharacter=' '):
     if separationWidth == None:
       separationWidth = BitwiseData.DEFAULT_STRING_SEPARATION
@@ -341,6 +342,13 @@ class BitwiseData:
       return BitwiseData.createFromList(list(origin))
     except TypeError:
       raise NotImplementedError(f'No conversion exists for type {type(origin)}')
+
+  @staticmethod
+  def convertBytes(origin, msb_first = False):
+    if type(origin) != bytes:
+      raise NotImplementedError(f'convertBytes only works on type "bytes", not "{type(origin)}"')
+    bd_array = [BitwiseData(8, b, msb_first) for b in origin]
+    return BitwiseData.concat(bd_array)
 
 if __name__ == '__main__':
   """Unit Testing"""
@@ -617,6 +625,13 @@ if __name__ == '__main__':
       self.assertEqual(b, BitwiseData(5, 0b01011))
       c = BitwiseData(5, 0b01011)
       self.assertEqual(c, BitwiseData(5, 0b01011))
+
+    def testConvertBytes(self):
+      a = bytes([0x0F, 0xAA])
+      b = BitwiseData.convertBytes(a, msb_first=False)
+      self.assertEqual(b, BitwiseData(16, 0xAA0F))
+      c = BitwiseData.convertBytes(a, msb_first=True)
+      self.assertEqual(c, BitwiseData(16, 0x55F0))
 
     def test_slice(self):
       a = BitwiseData(8, 0b10110100)
