@@ -192,6 +192,11 @@ class BitwiseData:
     return BitwiseData(self.count-1, highBits | lowBits)
   def withFlippedBit(self, b):
     return self.withValue(self.value ^ (1 << b))
+  def withFlips(self, bitsToFlip):
+    value = self.value
+    for b in bitsToFlip:
+      value ^= (1 << b)
+    return self.withValue(value)
 
   def bitStr(self, separationWidth = None, separationCharacter=' '):
     if separationWidth == None:
@@ -658,6 +663,13 @@ if __name__ == '__main__':
       a = BitwiseData(8, 0b01110001)
       b = a.reversed()
       self.assertEqual(b, BitwiseData(8, 0b10001110))
+
+    def test_flips(self):
+      a = BitwiseData(8, 0b01100101)
+      b = a.withFlippedBit(2)
+      self.assertEqual(b, BitwiseData(8, 0b01100001))
+      c = a.withFlips([2,3,4])
+      self.assertEqual(c, BitwiseData(8, 0b01111001))
 
   if __name__ == '__main__':
     unittest.main()
