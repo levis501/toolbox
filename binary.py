@@ -156,20 +156,17 @@ class BitwiseData:
     if msb_first:
       self.value = self.reversed().value
     
-  def copy(self):
-    return BitwiseData(self.count, self.value)
-  def randomize(self, rng=random.getrandbits):
-    self.value = rng(self.count)
-    return self
+  def withRandomizedValue(self, rng=random.getrandbits):
+    return self.withValue(rng(self.count))
   def __len__(self):
     return self.count
-  def setBits(self, bits, start=0, count=None):
+  def withSetBits(self, bits, start=0, count=None):
     if count is None:
       count = self.count-start
-    self.value = setBits(self.value, bits, start, count)
-    return self
-  def setValue(self, value):
-    self.value = value
+    value = setBits(self.value, bits, start, count)
+    return self.withValue(value)
+  def withValue(self, value):
+    return BitwiseData(self.count, value)
   def countOnes(self, useCache=False):
     return countOnes(self.value, useCache)
   def countZeros(self, useCache=False):
@@ -181,48 +178,49 @@ class BitwiseData:
         raise ValueError("Cannot slice BinaryData to zero bits (%s)" % key)
       return BitwiseData.createFromList(s)
     return getBit(self.value, key)
-  def __setitem__(self, n, b):
-    self.value = setBit(self.value, n, b)
-  def __delitem__(self, n):
+  def withSetBit(self, n, b):
+    return BitwiseData(self.count, setBit(self.value, n, b))
+  def withDeletedBit(self, n):
     highBits = ((self.value >> (n+1)) << n) 
     if (n > 0):
       lowBits = self.value & invert(0, n-1)
     else:
       lowBits = 0
-    self.value = highBits | lowBits
-    self.count -= 1
-  def flip(self, b):
-    self.value ^= (1 << b)
-    return self
+    return BitwiseData(self.count-1, highBits | lowBits)
+  def withFlippedBit(self, b):
+    return self.withValue(self.value ^ (1 << b))
+
   def bitStr(self, separationWidth = None, separationCharacter=' '):
     if separationWidth == None:
       separationWidth = BitwiseData.DEFAULT_STRING_SEPARATION
     return bitStr(self.value, self.count, separationWidth, separationCharacter)
-  def __ior__(self, other):
-    self.value |= other.value if (type(other)==BitwiseData) else other
-    return self
   def __or__(self, other):
-    result = self.copy()
-    result |= other
-    return result
-  def __ixor__(self, other):
-    self.value ^= other.value if (type(other)==BitwiseData) else other
-    return self
+    if type(other) == BitwiseData:
+      value = self.value | other.value
+      count = max(self.count, other.count)
+    else:
+      value = self.value | other
+      count = max(self.count, highestOneIndex(other))
+    return BitwiseData(count, value)
   def __xor__(self, other):
-    result = self.copy()
-    result ^= other
-    return result
-  def __iand__(self, other):
-    self.value &= other.value if (type(other)==BitwiseData) else other
-    return self
+    if type(other) == BitwiseData:
+      value = self.value ^ other.value
+      count = max(self.count, other.count)
+    else:
+      value = self.value ^ other
+      count = max(self.count, highestOneIndex(other))
+    return BitwiseData(count, value)
   def __and__(self, other):
-    result= self.copy()
-    result &= other
-    return result
+    if type(other) == BitwiseData:
+      value = self.value & other.value
+      count = max(self.count, other.count)
+    else:
+      value = self.value & other
+      count = max(self.count, highestOneIndex(other))
+    return BitwiseData(count, value)
   def __invert__(self):
-    result = self.copy()
-    result.value = invert(result.value, result.count)
-    return result
+    value = invert(self.value, self.count)
+    return BitwiseData(self.count, value)
   def __eq__(self, other):
     if other is None:
       return False
@@ -278,19 +276,19 @@ class BitwiseData:
       i = next(g)
       n -= 1
     return i    
-  def increaseCapacity(self, increaseAmount):
-    self.count += increaseAmount
-    self.setZeros(self.count - increaseAmount, increaseAmount)
+  def withCapacityIncreasedBy(self, increaseAmount):
+    bd = BitwiseData(self.count + increaseAmount, self.value)
+    return bd.withZeros(bd.count - increaseAmount, increaseAmount)
   def bitDistance(self, other):
     return bitDistance(self.value, other.value if type(other)==BitwiseData else other)
-  def setAllZeros(self):
-    self.value = 0
-  def setAllOnes(self):
-    self.value = invert(0, self.count)
-  def setZeros(self, start, count):
-    self.setBits(0, start, count)
-  def setOnes(self, start, count):
-    self.setBits(invert(0, count), start, count)
+  def withAllZeros(self):
+    return self.withValue(0)
+  def withAllOnes(self):
+    return self.withValue(invert(0, self.count))
+  def withZeros(self, start, count):
+    return self.withSetBits(0, start, count)
+  def withOnes(self, start, count):
+    return self.withSetBits(invert(0, count), start, count)
   def getIndexedBits(self):
     a = self.value
     n = self.count
@@ -302,27 +300,26 @@ class BitwiseData:
     return
   def substr(self, start, count):
     return BitwiseData(count,(self.value >> start) & ((1<<count)-1))
-  def rshift(self, n):
-    self.value = rshift(self.value, self.count, n)
-  def lshift(self, n):
-    self.value = lshift(self.value, self.count, n)
+  def withRshift(self, n):
+    return self.withValue(rshift(self.value, self.count, n))
+  def withLshift(self, n):
+    return self.withValue(lshift(self.value, self.count, n))
   def correlate(self, other):
     return self.count - 2 * self.bitDistance(other)
   def reversed(self):
     return BitwiseData.convert(reversed(self))
-  def append(self, appendage):
+  def appendedWith(self, appendage):
     appendage = BitwiseData.convert(appendage)
     original_count = self.count
-    self.increaseCapacity(appendage.count)
-    self.setBits(appendage.value, original_count)
+    larger = self.withCapacityIncreasedBy(appendage.count)
+    return larger.withSetBits(appendage.value, original_count)
 
   @staticmethod
   def concat(a, b=None):
     if (b == None):
       c = functools.reduce(BitwiseData.concat, a)
     else:
-      c = a.copy()
-      c.append(b)
+      c = a.appendedWith(b)
     return c
 
   @staticmethod
@@ -417,17 +414,17 @@ if __name__ == '__main__':
       self.assertEqual(bd[4], 0)
 
     def test_setBit(self):
-      bd = BitwiseData(4)
-      self.assertEqual(bd[2], 0)
-      bd[2] = 1
-      self.assertEqual(bd[2], 1)
-      bd[2] = 0
-      self.assertEqual(bd[2], 0)
+      a = BitwiseData(4)
+      self.assertEqual(a[2], 0)
+      b = a.withSetBit(2, 1)
+      self.assertEqual(b[2], 1)
+      c = a.withSetBit(2, 0)
+      self.assertEqual(c[2], 0)
 
     def test_setBits(self):
-      bd = BitwiseData(8, 0b11010111)
-      bd.setBits(0b1010, 2, 4)
-      self.assertEqual(bd, 0b11101011)
+      a = BitwiseData(8, 0b11010111)
+      b = a.withSetBits(0b1010, 2, 4)
+      self.assertEqual(b, 0b11101011)
 
     def test_equal(self):
       bd = BitwiseData(8, 0b01010111)
@@ -451,10 +448,6 @@ if __name__ == '__main__':
       self.assertEqual(bd, 0b0101)
       bd = ~BitwiseData(4, 0)
       self.assertEqual(bd, 0b1111)
-
-    def test_copy(self):
-      a = BitwiseData(8, 0b11001010).copy()
-      self.assertEqual(a, 0b11001010)
 
     def test_and(self):
       bd1 = BitwiseData(4, 0b1100)
@@ -491,10 +484,10 @@ if __name__ == '__main__':
     def test_increaseCapacity(self):
       a = BitwiseData(8, 0b11001010)
       self.assertEqual(len(a), 8)
-      a.increaseCapacity(1)
-      self.assertEqual(len(a), 9)
-      a.increaseCapacity(10)
-      self.assertEqual(len(a), 19)
+      b = a.withCapacityIncreasedBy(1)
+      self.assertEqual(len(b), 9)
+      c = b.withCapacityIncreasedBy(10)
+      self.assertEqual(len(c), 19)
 
     def test_bitDistance(self):
       a = BitwiseData(8, 0b10100101)
@@ -506,12 +499,12 @@ if __name__ == '__main__':
     def test_setAll(self):
       a = BitwiseData(8, 0b10100101)
       self.assertEqual(a.countOnes(), 4)
-      a.setAllZeros()
-      self.assertEqual(a.countOnes(), 0)
-      b = BitwiseData(8, 0b00001111)
-      self.assertEqual(b.countOnes(), 4)
-      b.setAllOnes()
-      self.assertEqual(b.countOnes(), 8)
+      b = a.withAllZeros()
+      self.assertEqual(b.countOnes(), 0)
+      c = BitwiseData(8, 0b00001111)
+      self.assertEqual(c.countOnes(), 4)
+      d = c.withAllOnes()
+      self.assertEqual(d.countOnes(), 8)
 
     def test_getIndexedBits(self):
       a = BitwiseData(8, 0b10100111)
@@ -522,14 +515,14 @@ if __name__ == '__main__':
     def test_setZeros(self):
       a = BitwiseData(8, 0b10100111)
       b = BitwiseData(8, 0b10000011)
-      a.setZeros(2, 5)
-      self.assertEqual(a, b)
+      c = a.withZeros(2, 5)
+      self.assertEqual(c, b)
 
     def test_setOnes(self):
       a = BitwiseData(8, 0b10100111)
       b = BitwiseData(8, 0b11111111)
-      a.setOnes(2, 5)
-      self.assertEqual(a, b)
+      c = a.withOnes(2, 5)
+      self.assertEqual(c, b)
 
     def test_substr(self):
       a = BitwiseData(8, 0b10100111)
@@ -540,44 +533,44 @@ if __name__ == '__main__':
 
     def test_delitem(self):
       a = BitwiseData(8, 0b10100111)
-      del a[4]
-      self.assertEqual(a, BitwiseData(7, 0b1010111))
-      del a[4]
-      self.assertEqual(a, BitwiseData(6, 0b100111))
-      del a[0]
-      self.assertEqual(a, BitwiseData(5, 0b10011))
-      del a[4]
-      self.assertEqual(a, BitwiseData(4, 0b0011))
+      b = a.withDeletedBit(4)
+      self.assertEqual(b, BitwiseData(7, 0b1010111))
+      c = b.withDeletedBit(4)
+      self.assertEqual(c, BitwiseData(6, 0b100111))
+      d = c.withDeletedBit(0)
+      self.assertEqual(d, BitwiseData(5, 0b10011))
+      e = d.withDeletedBit(4)
+      self.assertEqual(e, BitwiseData(4, 0b0011))
       
     def test_rshift(self):
       a = BitwiseData(5, 0b11010)
-      a.rshift(1)
-      self.assertEqual(a, BitwiseData(5, 0b01101))
-      a.rshift(2)
-      self.assertEqual(a, BitwiseData(5, 0b01011))
-      a.rshift(3)
-      self.assertEqual(a, BitwiseData(5, 0b01101))
-      a.rshift(4)
-      self.assertEqual(a, BitwiseData(5, 0b11010))
-      a.rshift(5)
-      self.assertEqual(a, BitwiseData(5, 0b11010))
-      a.rshift(6)
-      self.assertEqual(a, BitwiseData(5, 0b01101))
+      b = a.withRshift(1)
+      self.assertEqual(b, BitwiseData(5, 0b01101))
+      c = b.withRshift(2)
+      self.assertEqual(c, BitwiseData(5, 0b01011))
+      d = c.withRshift(3)
+      self.assertEqual(d, BitwiseData(5, 0b01101))
+      e = d.withRshift(4)
+      self.assertEqual(e, BitwiseData(5, 0b11010))
+      f = e.withRshift(5)
+      self.assertEqual(f, BitwiseData(5, 0b11010))
+      g = f.withRshift(6)
+      self.assertEqual(g, BitwiseData(5, 0b01101))
       
     def test_lshift(self):
       a = BitwiseData(5, 0b11010)
-      a.lshift(1)
-      self.assertEqual(a, BitwiseData(5, 0b10101))
-      a.lshift(2)
-      self.assertEqual(a, BitwiseData(5, 0b10110))
-      a.lshift(3)
-      self.assertEqual(a, BitwiseData(5, 0b10101))
-      a.lshift(4)
-      self.assertEqual(a, BitwiseData(5, 0b11010))
-      a.lshift(5)
-      self.assertEqual(a, BitwiseData(5, 0b11010))
-      a.lshift(6)
-      self.assertEqual(a, BitwiseData(5, 0b10101))
+      b = a.withLshift(1)
+      self.assertEqual(b, BitwiseData(5, 0b10101))
+      c = b.withLshift(2)
+      self.assertEqual(c, BitwiseData(5, 0b10110))
+      d = c.withLshift(3)
+      self.assertEqual(d, BitwiseData(5, 0b10101))
+      e = d.withLshift(4)
+      self.assertEqual(e, BitwiseData(5, 0b11010))
+      f = e.withLshift(5)
+      self.assertEqual(f, BitwiseData(5, 0b11010))
+      g = f.withLshift(6)
+      self.assertEqual(g, BitwiseData(5, 0b10101))
 
     def test_fromList(self):
       a = BitwiseData.createFromList([0])
@@ -601,12 +594,12 @@ if __name__ == '__main__':
     def test_append(self):
       a = BitwiseData(5, 0b11010)
       b = BitwiseData(3, 0b010)
-      a.append(b)
-      self.assertEqual(a, BitwiseData(8, 0b01011010))
-      a.append(1)
-      self.assertEqual(a, BitwiseData(9, 0b101011010))
-      a.append(0)
-      self.assertEqual(a, BitwiseData(10, 0b0101011010))
+      c = a.appendedWith(b)
+      self.assertEqual(c, BitwiseData(8, 0b01011010))
+      d = c.appendedWith(1)
+      self.assertEqual(d, BitwiseData(9, 0b101011010))
+      e = d.appendedWith(0)
+      self.assertEqual(e, BitwiseData(10, 0b0101011010))
 
     def test_correlate(self):
       a = BitwiseData(5, 0b11010)
@@ -647,9 +640,8 @@ if __name__ == '__main__':
 
     def test_randomize(self):
       a = BitwiseData(8, 0b00011011)
-      b = a.randomize(rng=self.mock_rng8)
-      self.assertEqual(a, BitwiseData(8, 0b10110001))
-      self.assertEqual(b, a)
+      b = a.withRandomizedValue(rng=self.mock_rng8)
+      self.assertEqual(b, BitwiseData(8, 0b10110001))
 
     def test_reversed(self):
       a = BitwiseData(8, 0b01110001)
