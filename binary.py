@@ -155,9 +155,12 @@ class BitwiseData:
       self.count = count
     if msb_first:
       self.value = self.reversed().value
-    
+
+  @staticmethod
+  def randomized(count, rng=random.getrandbits):
+    return BitwiseData(count, rng(count))
   def withRandomizedValue(self, rng=random.getrandbits):
-    return self.withValue(rng(self.count))
+    return BitwiseData.randomized(self.count, rng)
   def __len__(self):
     return self.count
   def withSetBits(self, bits, start=0, count=None):
@@ -634,14 +637,22 @@ if __name__ == '__main__':
       self.assertEqual(a[::-1], 0b00101101)
       self.assertEqual(a[5:3:-1], 0b11)
 
-    def mock_rng8(self, bitsRequested):
-      self.assertEqual(bitsRequested, 8, "This mock reqires an arguemnt of 8")
-      return 0b10110001
+    def mock_rng(self, mockBitCount, mockBits):
+      def rng(bitCount):
+        self.assertEqual(bitCount, mockBitCount, f'This mock only responds to bit counts of {mockBitCount}')
+        return mockBits
+      return rng
 
     def test_randomize(self):
       a = BitwiseData(8, 0b00011011)
-      b = a.withRandomizedValue(rng=self.mock_rng8)
-      self.assertEqual(b, BitwiseData(8, 0b10110001))
+      mockBits8 = 0b10110001
+      mock_rng8 = self.mock_rng(8, mockBits8)
+      b = a.withRandomizedValue(rng=mock_rng8)
+      self.assertEqual(b, BitwiseData(8, mockBits8))
+      mockBits12 = 0b1001001110
+      mock_rng12 = self.mock_rng(12, mockBits12)
+      c = BitwiseData.randomized(12, rng=mock_rng12)
+      self.assertEqual(c, BitwiseData(12, mockBits12))
 
     def test_reversed(self):
       a = BitwiseData(8, 0b01110001)
