@@ -42,6 +42,8 @@ class xnumerate:
           self._index_stack[-1] += 1
         continue
     raise StopIteration
+  def sorted(self, key = lambda x: x):
+    return sorted(self, key = lambda iv: key(iv[1]))
 
 
 if __name__ == '__main__':
@@ -104,6 +106,22 @@ if __name__ == '__main__':
     def test_xnumerateSingleCharacter(self):
       i = iter(xnumerate('a'))
       self.assertEqual(next(i), (0, 'a'))
+
+    def test_sortedOneItem(self):
+      x = xnumerate([6])
+      i = iter(x.sorted())
+      self.assertEqual(next(i), (0, 6))
+
+    def test_sortedTwoItems(self):
+      x = xnumerate([7, 6])
+      i = iter(x.sorted())
+      self.assertEqual(next(i), (1, 6))
+
+    def test_sortedWithKey(self):
+      x = xnumerate((6, 7))
+      i = iter(x.sorted(key = lambda x: -x))
+      self.assertEqual(next(i), (1, 7))
+      
 
 
 
