@@ -297,6 +297,8 @@ class BitwiseData:
     return self.withSetBits(0, start, count)
   def withOnes(self, start, count):
     return self.withSetBits(invert(0, count), start, count)
+  def split(self, n):
+    return list([self[k:k+n] for k in range(0, self.count, n)])
   def getIndexedBits(self):
     a = self.value
     n = self.count
@@ -671,5 +673,17 @@ if __name__ == '__main__':
       c = a.withFlips([2,3,4])
       self.assertEqual(c, BitwiseData(8, 0b01111001))
 
+    def test_split(self):
+      a = BitwiseData(8, 0b01101001)
+      a2 = a.split(2)
+      self.assertEqual(a2[0], BitwiseData(2, 0b01))
+      self.assertEqual(a2[1], BitwiseData(2, 0b10))
+      self.assertEqual(a2[2], BitwiseData(2, 0b10))
+      self.assertEqual(a2[3], BitwiseData(2, 0b01))
+      a4 = a.split(4)
+      self.assertEqual(a4[0], BitwiseData(4, 0b1001))
+      self.assertEqual(a4[1], BitwiseData(4, 0b0110))
+      
+      
   if __name__ == '__main__':
     unittest.main()
