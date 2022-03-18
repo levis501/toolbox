@@ -257,6 +257,21 @@ class BitwiseData:
       value >>= 1
       count -= 1
     return
+  def __mul__(self, other):
+    if type(other)==int:
+      """Repeat a BD n times"""
+      n = other
+      v = 0 
+      for _ in range(n):
+        v <<= self.count
+        v += self.value
+      return BitwiseData(self.count * n, v)
+    raise TypeError(f"Unsupported operand type {type(other)}")
+  def __add__(self, other):
+    """Concatenate two BD"""
+    c = self.count + other.count
+    v = (other.value << self.count) + self.value
+    return BitwiseData(c, v)
   def ones(self):
     value = self.value
     index = 0
@@ -312,8 +327,12 @@ class BitwiseData:
     return BitwiseData(count,(self.value >> start) & ((1<<count)-1))
   def withRshift(self, n):
     return self.withValue(rshift(self.value, self.count, n))
+  def __rshift__(self, n):
+    return self.withRshift(n)
   def withLshift(self, n):
     return self.withValue(lshift(self.value, self.count, n))
+  def __lshift__(self, n):
+    return self.withLshift(n)
   def correlate(self, other):
     return self.count - 2 * self.bitDistance(other)
   def reversed(self):
@@ -477,6 +496,17 @@ if __name__ == '__main__':
       self.assertEqual(bd3, 0b1111)
       bd4 = bd1 | 0b1010
       self.assertEqual(bd4, 0b1111)
+      
+    def test_mul(self):
+      bd3 = BitwiseData(3, 0b110)
+      bd6 = bd3 * 2
+      self.assertEqual(bd6, BitwiseData(6, 0b110110))
+      self.assertEqual(bd6 * 2, bd3 * 4)
+      
+    def test_add(self):
+      a = BitwiseData(3, 0b101)
+      b = BitwiseData(3, 0b011)
+      self.assertEqual(a + b, BitwiseData(6, 0b011101))
 
     def test_iter(self):
       a = BitwiseData(8, 0b11001010)
