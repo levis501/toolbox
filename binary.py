@@ -267,8 +267,7 @@ class BitwiseData:
         v += self.value
       return BitwiseData(self.count * n, v)
     raise TypeError(f"Unsupported operand type {type(other)}")
-  def __add__(self, other):
-    """Concatenate two BD"""
+  def append(self, other):
     c = self.count + other.count
     v = (other.value << self.count) + self.value
     return BitwiseData(c, v)
@@ -503,10 +502,10 @@ if __name__ == '__main__':
       self.assertEqual(bd6, BitwiseData(6, 0b110110))
       self.assertEqual(bd6 * 2, bd3 * 4)
       
-    def test_add(self):
+    def test_append(self):
       a = BitwiseData(3, 0b101)
       b = BitwiseData(3, 0b011)
-      self.assertEqual(a + b, BitwiseData(6, 0b011101))
+      self.assertEqual(a.append(b), BitwiseData(6, 0b011101))
 
     def test_iter(self):
       a = BitwiseData(8, 0b11001010)
