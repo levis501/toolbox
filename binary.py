@@ -268,6 +268,8 @@ class BitwiseData:
       return BitwiseData(self.count * n, v)
     raise TypeError(f"Unsupported operand type {type(other)}")
   def append(self, other):
+    if type(other) != BitwiseData:
+      other = BitwiseData.convert(other)
     c = self.count + other.count
     v = (other.value << self.count) + self.value
     return BitwiseData(c, v)
