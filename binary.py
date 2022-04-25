@@ -180,6 +180,8 @@ class BitwiseData:
       if len(s) < 1:
         raise ValueError("Cannot slice BinaryData to zero bits (%s)" % key)
       return BitwiseData.createFromList(s)
+    if key < 0:
+      key = self.count + key
     return getBit(self.value, key)
   def withSetBit(self, n, b):
     return BitwiseData(self.count, setBit(self.value, n, b))
