@@ -198,7 +198,8 @@ class BitwiseData:
     value = self.value
     for b in bitsToFlip:
       value ^= (1 << b)
-    return self.withValue(value)
+    count = max(self.count, max(bitsToFlip)+1)
+    return BitwiseData(count, value)
 
   def bitStr(self, separationWidth = None, separationCharacter=' '):
     if separationWidth == None:
@@ -357,6 +358,10 @@ class BitwiseData:
   @staticmethod
   def createFromList(bitList):
     return BitwiseData(len(bitList), fromList(bitList))
+
+  @staticmethod
+  def createFromOnes(ones_indices, count=None):
+    return BitwiseData(count).withFlips(ones_indices)
 
   @staticmethod
   def convert(origin, count=None):
@@ -705,6 +710,12 @@ if __name__ == '__main__':
       self.assertEqual(b, BitwiseData(8, 0b01100001))
       c = a.withFlips([2,3,4])
       self.assertEqual(c, BitwiseData(8, 0b01111001))
+
+    def test_fromOnes(self):
+      a = BitwiseData.createFromOnes({3, 5, 6})
+      self.assertEqual(a, BitwiseData(7, 0b1101000))
+      b = BitwiseData.createFromOnes({2, 4, 5}, 8)
+      self.assertEqual(b, BitwiseData(8, 0b00110100))
 
     def test_split(self):
       a = BitwiseData(8, 0b01101001)
