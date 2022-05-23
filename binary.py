@@ -371,6 +371,8 @@ class BitwiseData:
       return origin
     if type(origin) == int:
       return BitwiseData(count, origin)
+    if type(origin) == type(True):
+      return BitwiseData(1, value=int(origin))
     try:
       iter(origin)
       return BitwiseData.createFromList(list(origin))
