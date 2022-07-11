@@ -37,7 +37,7 @@ def getBit(i, n):
     return ii & 0x1
 
 def setBit(i, n, b=True):
-    ii = 1 << n
+    ii = 1 << int(n)
     if (b):
         return i | ii
     else:
@@ -145,7 +145,7 @@ class BitwiseData:
   """Encapsulates a binary value and its length"""
   DEFAULT_STRING_SEPARATION = None
   def __init__(self, count=None, value=0, msb_first=False):
-    self.value = value
+    self.value = int(value)
     minBits = 1 + highestOneIndex(value)
     if (count is None):
       self.count = max(minBits,1)
