@@ -197,7 +197,7 @@ class BitwiseData:
   def withFlips(self, bitsToFlip):
     value = self.value
     for b in bitsToFlip:
-      value ^= (1 << b)
+      value ^= (1 << int(b))
     count = max(self.count, max(bitsToFlip)+1)
     return BitwiseData(count, value)
 
