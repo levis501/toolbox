@@ -195,6 +195,8 @@ class BitwiseData:
   def withFlippedBit(self, b):
     return self.withValue(self.value ^ (1 << int(b)))
   def withFlips(self, bitsToFlip):
+    if len(bitsToFlip) == 0:
+      return self
     value = self.value
     for b in bitsToFlip:
       value ^= (1 << int(b))
@@ -712,6 +714,8 @@ if __name__ == '__main__':
       self.assertEqual(b, BitwiseData(8, 0b01100001))
       c = a.withFlips([2,3,4])
       self.assertEqual(c, BitwiseData(8, 0b01111001))
+      d = a.withFlips([])
+      self.assertEqual(d, a)
 
     def test_fromOnes(self):
       a = BitwiseData.createFromOnes({3, 5, 6})
