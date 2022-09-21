@@ -33,11 +33,11 @@ def getIndexedBits(a, n):
     i += 1
 
 def getBit(i, n):
-    ii = i >> n
+    ii = i >> int(n)
     return ii & 0x1
 
 def setBit(i, n, b=True):
-    ii = 1 << n
+    ii = 1 << int(n)
     if (b):
         return i | ii
     else:
@@ -145,7 +145,7 @@ class BitwiseData:
   """Encapsulates a binary value and its length"""
   DEFAULT_STRING_SEPARATION = None
   def __init__(self, count=None, value=0, msb_first=False):
-    self.value = value
+    self.value = int(value)
     minBits = 1 + highestOneIndex(value)
     if (count is None):
       self.count = max(minBits,1)
@@ -193,11 +193,11 @@ class BitwiseData:
       lowBits = 0
     return BitwiseData(self.count-1, highBits | lowBits)
   def withFlippedBit(self, b):
-    return self.withValue(self.value ^ (1 << b))
+    return self.withValue(self.value ^ (1 << int(b)))
   def withFlips(self, bitsToFlip):
     value = self.value
     for b in bitsToFlip:
-      value ^= (1 << b)
+      value ^= (1 << int(b))
     count = max(self.count, max(bitsToFlip)+1)
     return BitwiseData(count, value)
 
