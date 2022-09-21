@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Snap Refresh
+Comment=Refresh over all snaps
+Exec=gnome-terminal --window -- /usr/bin/snap_refresh
+Type=Application
+Terminal=False
+
