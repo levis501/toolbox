@@ -3,15 +3,12 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-
-
-
 void enter_to_continue() {
     printf("Press Enter to continue...\n");
     while (getchar() != '\n') {}
 }
 
-void exec_snap_refresh() {
+void snap_refresh() {
   const char *path="/usr/bin/snap";
   const char *arg1="refresh";
 
@@ -19,6 +16,13 @@ void exec_snap_refresh() {
   execlp(path, path, arg1, (char *) NULL);
 }
 
+void snap_store_kill() {
+  const char *path="/usr/bin/pkill";
+  const char *arg1="snap-store";
+
+  printf("Closing snap-store...\n");
+  execlp(path, path, arg1, (char *) NULL);
+}
 
 int fork_then(void (*child)(), void (*parent)()) {
   if (fork()) {
@@ -30,9 +34,11 @@ int fork_then(void (*child)(), void (*parent)()) {
     child();
   }
 }
-  
-int main() {
 
-  int wstatus = fork_then(exec_snap_refresh, enter_to_continue);
-  return wstatus;
+void second_fork() {
+  fork_then(snap_refresh, enter_to_continue);
+}
+
+int main() {
+  return fork_then(snap_store_kill, second_fork);
 }
