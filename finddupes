@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+#
+# finddupes — find near-duplicate files in a directory tree
+#
+# "Near-duplicate" means identical size, file type (libmagic), and MD5 checksum.
+# Symbolic links are never followed or reported.
+#
+# Usage: finddupes [directory]   (defaults to current directory)
+
+set -euo pipefail
+
+SEARCH_ROOT="${1:-.}"
+
+if [[ ! -d "$SEARCH_ROOT" ]]; then
+    echo "error: not a directory: $SEARCH_ROOT" >&2
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Phase 1 – collect one line per regular file into a temp file:
+#
+#   size|||magic|||md5|||filepath
+#
+# The ||| delimiter is chosen because it is vanishingly unlikely to appear in
+# a libmagic description.  Using -type f (regular files only) is sufficient to
+# exclude symbolic links; no additional flag is needed.
+# ---------------------------------------------------------------------------
+
+echo "Scanning: $SEARCH_ROOT" >&2
+echo >&2
+
+scratch=$(mktemp)
+trap 'rm -f "$scratch"' EXIT
+
+find "$SEARCH_ROOT" -type f | sort | while IFS= read -r filepath; do
+    size=$(stat -c '%s' "$filepath")
+
+    # file -b may emit multiple lines; collapse them to a single line
+    magic=$(file -b "$filepath" | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+
+    md5=$(md5sum "$filepath" | cut -d' ' -f1)
+
+    printf '%s|||%s|||%s|||%s\n' "$size" "$magic" "$md5" "$filepath"
+done | sort > "$scratch"
+
+# ---------------------------------------------------------------------------
+# Phase 2 – group by (size, magic, md5) and report each duplicate set
+#
+# Awk reads the sorted scratch file.  Because equal keys are adjacent after
+# the sort, a single pass is enough to collect groups.  We store per-group
+# filepaths in a two-dimensional array (group_id, file_index) to avoid the
+# fragility of splitting newline-delimited strings later.
+# ---------------------------------------------------------------------------
+
+awk -F'[|][|][|]' '
+
+# ── Accumulation pass ──────────────────────────────────────────────────────
+{
+    key = $1 SUBSEP $2 SUBSEP $3     # composite key: size + magic + md5
+
+    if (!(key in group_id)) {
+        group_id[key] = ++total_groups
+        group_size[key]  = $1
+        group_magic[key] = $2
+        group_md5[key]   = $3
+    }
+
+    gid = group_id[key]
+    file_count[gid]++
+    filepath[gid, file_count[gid]] = $4
+}
+
+# ── Report ─────────────────────────────────────────────────────────────────
+END {
+    dup_groups   = 0
+    total_wasted = 0
+
+    for (g = 1; g <= total_groups; g++) {
+
+        # Reverse-look up the key for group g.  (We need it to access the
+        # group_* metadata arrays that are keyed by the composite key.)
+        n = file_count[g]
+        if (n < 2) continue          # unique file — nothing to report
+
+        # Find the key that maps to this group id
+        for (key in group_id) {
+            if (group_id[key] == g) break
+        }
+
+        dup_groups++
+        sz     = group_size[key] + 0   # coerce to numeric
+        wasted = sz * (n - 1)          # one copy is "original", rest wasted
+        total_wasted += wasted
+
+        printf "────────────────────────────────────────────────────────────\n"
+        printf "Group %d  (%d copies)\n", dup_groups, n
+        printf "  Size   : %s bytes\n",   commify(sz)
+        printf "  Type   : %s\n",         group_magic[key]
+        printf "  MD5    : %s\n",         group_md5[key]
+        printf "  Wasted : %s bytes (%d redundant cop%s)\n",
+               commify(wasted), n - 1, (n - 1 == 1 ? "y" : "ies")
+        printf "  Files  :\n"
+        for (j = 1; j <= n; j++)
+            printf "    %s\n", filepath[g, j]
+        printf "\n"
+    }
+
+    if (dup_groups == 0) {
+        print "No near-duplicate files found."
+    } else {
+        printf "════════════════════════════════════════════════════════════\n"
+        printf "Summary: %d duplicate group%s, %s bytes of redundant data\n",
+               dup_groups,
+               (dup_groups == 1 ? "" : "s"),
+               commify(total_wasted)
+    }
+}
+
+# Insert thousands separators into a non-negative integer
+function commify(n,    s, result) {
+    s      = sprintf("%d", n)
+    result = ""
+    while (length(s) > 3) {
+        result = "," substr(s, length(s) - 2) result
+        s      = substr(s, 1, length(s) - 3)
+    }
+    return s result
+}
+' "$scratch"
